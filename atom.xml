@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T13:43:01+08:00</updated>
+  <updated>2011-08-01T13:45:44+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -58,19 +58,6 @@ rake deploy&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
 &lt;p&gt;```&lt;/p&gt;
 
 &lt;h4&gt;还可以贴gist，给个id就好了&lt;/h4&gt;
-
-
-&lt;p&gt;比如&lt;/p&gt;
-
-&lt;div&gt;&lt;figure role=code&gt;&lt;pre&gt;&lt;code&gt;&amp;lt;div&gt;&amp;lt;script src='https://gist.github.com/996818.js?file='&gt;&amp;lt;/script&gt;
-&amp;lt;noscript&gt;&amp;lt;pre&gt;&amp;lt;code&gt;@@ -590,7 +590,7 @@ class SpritesTest &amp;lt; Test::Unit::TestCase
-  it &amp;quot;should generate a sprite from nested folders&amp;quot; do
-    css = render &amp;lt;&amp;lt;-SCSS
--     @import &amp;quot;nested/*.png&amp;quot;;
-+     @import &amp;quot;nested/**/*.png&amp;quot;;
-      @include all-nested-sprites;
-    SCSS
-    assert_correct css, &amp;lt;&amp;lt;-CSS&amp;lt;/code&gt;&amp;lt;/pre&gt;&amp;lt;/noscript&gt;&amp;lt;/div&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
 
 
 
