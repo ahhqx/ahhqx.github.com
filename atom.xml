@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T13:20:54+08:00</updated>
+  <updated>2011-08-01T13:22:09+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -26,7 +26,14 @@
 &lt;h4&gt;发布很geek&lt;/h4&gt;
 
 
-&lt;p&gt;基于github团队写的jkeyll，可以host在github上，发布很容易的，执行几个rake命令而已&lt;/p&gt;
+&lt;p&gt;基于github团队写的jkeyll，可以host在github上，发布很容易的，执行几个rake命令而已
+```&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;rake generate 
+rake deploy
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;```&lt;/p&gt;
 
 &lt;h4&gt;是可以很方便的贴代码的&lt;/h4&gt;
 
