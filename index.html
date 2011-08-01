@@ -158,6 +158,21 @@ rake deploy</code></pre></figure></div>
 <h4>还可以贴gist，给个id就好了</h4>
 
 
+<p>比如</p>
+
+<div><figure role=code><pre><code>&lt;div>&lt;script src='https://gist.github.com/996818.js?file='>&lt;/script>
+&lt;noscript>&lt;pre>&lt;code>@@ -590,7 +590,7 @@ class SpritesTest &lt; Test::Unit::TestCase
+  it &quot;should generate a sprite from nested folders&quot; do
+    css = render &lt;&lt;-SCSS
+-     @import &quot;nested/*.png&quot;;
++     @import &quot;nested/**/*.png&quot;;
+      @include all-nested-sprites;
+    SCSS
+    assert_correct css, &lt;&lt;-CSS&lt;/code>&lt;/pre>&lt;/noscript>&lt;/div></code></pre></figure></div>
+
+
+
+
 <div><script src='https://gist.github.com/798569.js?file='></script>
 <noscript><pre><code>/*
  * Author: http://stuffandnonsense.co.uk/blog/about/hardboiled_css3_media_queries/
