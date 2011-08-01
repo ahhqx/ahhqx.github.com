@@ -4,12 +4,103 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T11:53:45+08:00</updated>
+  <updated>2011-08-01T12:42:45+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
     
   </author>
 
+  
+  <entry>
+    <title>Octopress 简介</title>
+    <link href="http://niuapp.com/blog/2011/08/01/octopress-intro/"/>
+    <updated>2011-08-01T12:35:00+08:00</updated>
+    <id>http://niuapp.com/blog/2011/08/01/octopress-intro</id>
+    <content type="html">&lt;h3&gt;是可以很方便的贴代码的&lt;/h3&gt;
+
+
+&lt;p&gt;``` javascript&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;var new = function(){
+    console.log(&quot;this is new!&quot;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;```&lt;/p&gt;
+
+&lt;h3&gt;还可以贴gist，给个id就好了&lt;/h3&gt;
+
+
+&lt;div&gt;&lt;script src='https://gist.github.com/798569.js?file='&gt;&lt;/script&gt;
+&lt;noscript&gt;&lt;pre&gt;&lt;code&gt;/*
+ * Author: http://stuffandnonsense.co.uk/blog/about/hardboiled_css3_media_queries/
+ */
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen 
+and (min-device-width : 320px) 
+and (max-device-width : 480px) {
+/* Styles */
+}
+
+/* Smartphones (landscape) ----------- */
+@media only screen 
+and (min-width : 321px) {
+/* Styles */
+}
+
+/* Smartphones (portrait) ----------- */
+@media only screen 
+and (max-width : 320px) {
+/* Styles */
+}
+
+/* iPads (portrait and landscape) ----------- */
+@media only screen 
+and (min-device-width : 768px) 
+and (max-device-width : 1024px) {
+/* Styles */
+}
+
+/* iPads (landscape) ----------- */
+@media only screen 
+and (min-device-width : 768px) 
+and (max-device-width : 1024px) 
+and (orientation : landscape) {
+/* Styles */
+}
+
+/* iPads (portrait) ----------- */
+@media only screen 
+and (min-device-width : 768px) 
+and (max-device-width : 1024px) 
+and (orientation : portrait) {
+/* Styles */
+}
+
+/* Desktops and laptops ----------- */
+@media only screen 
+and (min-width : 1224px) {
+/* Styles */
+}
+
+/* Large screens ----------- */
+@media only screen 
+and (min-width : 1824px) {
+/* Styles */
+}
+
+/* iPhone 4 ----------- */
+@media
+only screen and (-webkit-min-device-pixel-ratio : 1.5),
+only screen and (min-device-pixel-ratio : 1.5) {
+/* Styles */
+}&lt;/code&gt;&lt;/pre&gt;&lt;/noscript&gt;&lt;/div&gt;
+
+
+
+</content>
+  </entry>
   
 </feed>
