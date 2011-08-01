@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T13:34:01+08:00</updated>
+  <updated>2011-08-01T13:37:18+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -127,7 +127,9 @@ only screen and (min-device-pixel-ratio : 1.5) {
 }&lt;/code&gt;&lt;/pre&gt;&lt;/noscript&gt;&lt;/div&gt;
 
 
+&lt;p&gt;其实还有很多&lt;a href=&quot;http://octopress.org/docs/blogging/plugins/&quot;&gt;插件&lt;/a&gt;可以使用&lt;/p&gt;
 
+&lt;p&gt;有事没事就折腾一下 对了可以follow我 &lt;a href=&quot;https://twitter.com/#!/ediyang&quot;&gt;@ediyang&lt;/a&gt;&lt;/p&gt;
 </content>
   </entry>
   
