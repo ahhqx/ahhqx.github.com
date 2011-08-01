@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T13:32:11+08:00</updated>
+  <updated>2011-08-01T13:33:11+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -46,8 +46,9 @@ rake deploy&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
 '''&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;&lt;/div&gt;
 
 
-&lt;p&gt;就会生成这样很漂亮的代码
-``` javascript&lt;/p&gt;
+&lt;p&gt;就会生成这样很漂亮的代码&lt;/p&gt;
+
+&lt;p&gt;``` javascript&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;var new = function(){
     console.log(&quot;this is new!&quot;);
