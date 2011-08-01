@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T13:20:07+08:00</updated>
+  <updated>2011-08-01T13:20:54+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -17,7 +17,10 @@
     <link href="http://niuapp.com/blog/2011/08/01/octopress-intro/"/>
     <updated>2011-08-01T12:35:00+08:00</updated>
     <id>http://niuapp.com/blog/2011/08/01/octopress-intro</id>
-    <content type="html">&lt;blockquote&gt;&lt;p&gt;Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages. To start blogging with with Jekyll, you have to write your own HTML templates, CSS, Javascripts and set up your configuration. But with Octopress All of that is already taken care of. Simply clone or fork Octopress, install dependencies and the theme, and you’re set.&lt;/p&gt;&lt;footer&gt;&lt;strong&gt;Brandon Mathis&lt;/strong&gt;&lt;cite&gt;&lt;a href='http://octopress.org/blog/2011/07/23/octopress-20-surfaces/'&gt;octopress.org/blog/2011/07/23/&amp;hellip;&lt;/a&gt;&lt;/cite&gt;&lt;/footer&gt;&lt;/blockquote&gt;
+    <content type="html">&lt;h4&gt;作者怎么说的&lt;/h4&gt;
+
+
+&lt;blockquote&gt;&lt;p&gt;Octopress is a framework designed by Brandon Mathis for Jekyll, the blog aware static site generator powering Github Pages. To start blogging with with Jekyll, you have to write your own HTML templates, CSS, Javascripts and set up your configuration. But with Octopress All of that is already taken care of. Simply clone or fork Octopress, install dependencies and the theme, and you’re set.&lt;/p&gt;&lt;footer&gt;&lt;strong&gt;Brandon Mathis&lt;/strong&gt;&lt;cite&gt;&lt;a href='http://octopress.org/blog/2011/07/23/octopress-20-surfaces/'&gt;octopress.org/blog/2011/07/23/&amp;hellip;&lt;/a&gt;&lt;/cite&gt;&lt;/footer&gt;&lt;/blockquote&gt;
 
 
 &lt;h4&gt;发布很geek&lt;/h4&gt;
