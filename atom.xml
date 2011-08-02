@@ -4,13 +4,39 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-01T18:49:49+08:00</updated>
+  <updated>2011-08-02T21:40:26+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
     
   </author>
 
+  
+  <entry>
+    <title>Backbone 教程</title>
+    <link href="http://niuapp.com/blog/2011/08/02/backbone-tuts/"/>
+    <updated>2011-08-02T21:28:00+08:00</updated>
+    <id>http://niuapp.com/blog/2011/08/02/backbone-tuts</id>
+    <content type="html">&lt;p&gt;不定期更新&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://documentcloud.github.com/backbone/&quot;&gt;Backbone.js官网&lt;/a&gt;
+介绍得很详细，仔细看上2遍&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://backbonetutorials.com/&quot;&gt;Backbone Tutorials&lt;/a&gt;
+入门的教程，里面一些tip减少你一开始犯错的几率，作者不停更新中&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://www.jamesyu.org/2011/01/27/cloudedit-a-backbone-js-tutorial-by-example/&quot;&gt;CloudEdit: A Backbone.js Tutorial with Rails (Part 1)&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://www.jamesyu.org/2011/02/09/backbone.js-tutorial-with-rails-part-2/&quot;&gt;Backbone.js Tutorial with Rails Part 2&lt;/a&gt;
+这两篇入门也不错&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://documentcloud.github.com/backbone/docs/todos.html&quot;&gt;todos.js&lt;/a&gt;
+这篇官方有一直推荐来入门的&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://scraps.hecticjeff.net/backbonejs-tips-lessons-from-the-trenches&quot;&gt;Backbone.js Tips : Lessons from the trenches&lt;/a&gt;
+作者讲了一些对backbone MVC的见解&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+
+&lt;p&gt;有好的介绍可以留言，我可以加进来，以后别人就可以看到了。&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Octopress 简介</title>
