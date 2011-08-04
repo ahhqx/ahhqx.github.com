@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-02T22:24:55+08:00</updated>
+  <updated>2011-08-04T23:45:15+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -31,6 +31,8 @@
 这篇官方有一直推荐来入门的&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://scraps.hecticjeff.net/backbonejs-tips-lessons-from-the-trenches&quot;&gt;Backbone.js Tips : Lessons from the trenches&lt;/a&gt;
 作者讲了一些对backbone MVC的见解&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;http://msdn.microsoft.com/zh-cn/scriptjunkie/hh377172.aspx&quot;&gt;Building Mobile JavaScript WebApps With Backbone.js &amp;amp; jQuery: Part I&lt;/a&gt;
+Addy Osmani的教程一般都写的很好的，会讲一些最佳实践，推荐看。&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 
