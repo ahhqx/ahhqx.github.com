@@ -4,7 +4,7 @@
   <title></title>
   <link href="http://niuapp.com/atom.xml" rel="self"/>
   <link href="http://niuapp.com/"/>
-  <updated>2011-08-06T20:05:25+08:00</updated>
+  <updated>2011-08-26T23:38:12+08:00</updated>
   <id>http://niuapp.com/</id>
   <author>
     <name>eddie yang</name>
@@ -13,7 +13,7 @@
 
   
   <entry>
-    <title>Backbone 教程</title>
+    <title>Backbone.js 教程</title>
     <link href="http://niuapp.com/blog/2011/08/02/backbone-tuts/"/>
     <updated>2011-08-02T21:28:00+08:00</updated>
     <id>http://niuapp.com/blog/2011/08/02/backbone-tuts</id>
