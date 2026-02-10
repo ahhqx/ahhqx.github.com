@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>食品工厂计算器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #f5f5f7;
+  --card: #fff;
+  --primary: #4a90d9;
+  --danger: #e55c5c;
+  --text: #1d1d1f;
+  --text2: #6e6e73;
+  --border: #e5e5ea;
+  --green: #34c759;
+  --orange: #ff9500;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.header {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(245,245,247,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 0.5px solid var(--border);
+}
+.header h1 { font-size: 17px; font-weight: 600; }
+.header-actions { display: flex; gap: 12px; }
+.header-btn {
+  background: none; border: none; font-size: 15px; color: var(--primary);
+  cursor: pointer; padding: 4px 8px; font-weight: 500;
+}
+.total-bar {
+  position: sticky; top: 49px; z-index: 9;
+  background: var(--primary);
+  color: #fff;
+  padding: 14px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.total-bar .label { font-size: 14px; opacity: 0.85; }
+.total-bar .amount { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+.items-list { padding: 8px; }
+.item-card {
+  background: var(--card);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  position: relative;
+}
+.item-row1 {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.item-label-btn {
+  background: #f0f0f5; border: none; border-radius: 6px;
+  padding: 6px 10px; font-size: 13px; color: var(--text);
+  cursor: pointer; white-space: nowrap; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+}
+.item-label-btn.has-label { background: #e8f0fe; color: var(--primary); font-weight: 500; }
+.item-expr {
+  flex: 1; min-width: 0;
+  font-size: 18px; font-weight: 500; font-family: "SF Mono", monospace;
+  border: none; background: none; color: var(--text);
+  outline: none; padding: 4px 0;
+}
+.item-expr::placeholder { color: #c7c7cc; font-weight: 400; }
+.item-row2 {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.item-subtotal {
+  font-size: 16px; font-weight: 600; color: var(--green);
+  font-family: "SF Mono", monospace;
+}
+.item-subtotal.error { color: var(--danger); font-size: 12px; font-weight: 400; }
+.item-delete {
+  background: none; border: none; color: #c7c7cc; font-size: 20px;
+  cursor: pointer; padding: 4px 8px; line-height: 1;
+}
+.item-delete:hover { color: var(--danger); }
+
+/* Quick label picker */
+.label-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.3);
+}
+.label-modal-overlay.show { display: flex; align-items: flex-end; justify-content: center; }
+.label-modal {
+  background: var(--card);
+  border-radius: 16px 16px 0 0;
+  width: 100%; max-width: 500px;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0));
+  max-height: 60vh; overflow-y: auto;
+}
+.label-modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; text-align: center; }
+.label-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.label-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 15px; outline: none;
+}
+.label-input:focus { border-color: var(--primary); }
+.label-save-btn {
+  background: var(--primary); color: #fff; border: none;
+  border-radius: 8px; padding: 10px 16px; font-size: 15px;
+  cursor: pointer; font-weight: 500;
+}
+.label-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.label-preset {
+  background: #f0f0f5; border: 1px solid var(--border);
+  border-radius: 20px; padding: 8px 14px; font-size: 14px;
+  cursor: pointer; color: var(--text);
+}
+.label-preset:active { background: #e0e0e5; }
+.label-preset.custom { border-style: dashed; color: var(--text2); }
+
+/* Add button */
+.add-btn {
+  display: block; width: calc(100% - 16px); margin: 4px 8px 16px;
+  background: var(--card); border: 2px dashed var(--border);
+  border-radius: 12px; padding: 14px; font-size: 15px;
+  color: var(--text2); cursor: pointer; text-align: center;
+}
+.add-btn:active { background: #f0f0f5; }
+
+/* Numpad for quick input */
+.numpad-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: #d1d3d9;
+  padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0));
+  display: none;
+}
+.numpad-bar.show { display: block; }
+.numpad-row { display: flex; gap: 4px; margin-bottom: 4px; }
+.numpad-row:last-child { margin-bottom: 0; }
+.nk {
+  flex: 1; background: #fff; border: none; border-radius: 6px;
+  padding: 12px 0; font-size: 22px; font-weight: 400;
+  cursor: pointer; text-align: center; color: var(--text);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+  -webkit-user-select: none; user-select: none;
+}
+.nk:active { background: #c5c7cd; }
+.nk.op { background: #a5a8b0; color: #fff; font-weight: 500; }
+.nk.op:active { background: #8e9199; }
+.nk.wide { flex: 2; }
+.nk.done { background: var(--primary); color: #fff; font-weight: 600; }
+.nk.done:active { background: #3a7bc8; }
+
+/* Save/Load */
+.save-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.3);
+}
+.save-modal-overlay.show { display: flex; align-items: center; justify-content: center; }
+.save-modal {
+  background: var(--card); border-radius: 16px;
+  width: 90%; max-width: 400px; padding: 20px;
+}
+.save-modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 16px; text-align: center; }
+.save-list { max-height: 300px; overflow-y: auto; margin-bottom: 12px; }
+.save-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px; border-bottom: 0.5px solid var(--border); cursor: pointer;
+}
+.save-item:active { background: #f0f0f5; }
+.save-item .name { font-size: 15px; font-weight: 500; }
+.save-item .meta { font-size: 12px; color: var(--text2); }
+.save-item .del-save {
+  background: none; border: none; color: #c7c7cc; font-size: 18px; cursor: pointer; padding: 4px;
+}
+.save-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.save-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 15px; outline: none;
+}
+.save-btn-row { display: flex; gap: 8px; }
+.save-btn-row button {
+  flex: 1; border: none; border-radius: 8px; padding: 12px;
+  font-size: 15px; cursor: pointer; font-weight: 500;
+}
+.btn-cancel { background: #f0f0f5; color: var(--text); }
+.btn-save { background: var(--primary); color: #fff; }
+
+@media (min-width: 600px) {
+  .items-list, .add-btn { max-width: 560px; margin-left: auto; margin-right: auto; }
+  .numpad-bar { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>食品工厂计算器</h1>
+  <div class="header-actions">
+    <button class="header-btn" onclick="showSaveModal()">保存/载入</button>
+    <button class="header-btn" onclick="clearAll()" style="color:var(--danger)">清空</button>
+  </div>
+</div>
+
+<div class="total-bar">
+  <span class="label">合计</span>
+  <span class="amount" id="totalAmount">¥0.00</span>
+</div>
+
+<div class="items-list" id="itemsList"></div>
+<button class="add-btn" id="addBtn" onclick="addItem()">+ 添加一项</button>
+
+<!-- Label picker modal -->
+<div class="label-modal-overlay" id="labelOverlay" onclick="closeLabelModal(event)">
+  <div class="label-modal">
+    <h3>选择标签</h3>
+    <div class="label-input-row">
+      <input class="label-input" id="labelInput" placeholder="输入自定义标签" maxlength="20">
+      <button class="label-save-btn" onclick="saveLabelFromInput()">确定</button>
+    </div>
+    <div class="label-presets" id="labelPresets"></div>
+  </div>
+</div>
+
+<!-- Save/Load modal -->
+<div class="save-modal-overlay" id="saveOverlay" onclick="closeSaveModal(event)">
+  <div class="save-modal">
+    <h3>保存 / 载入</h3>
+    <div class="save-list" id="saveList"></div>
+    <div class="save-input-row">
+      <input class="save-input" id="saveName" placeholder="输入方案名称">
+    </div>
+    <div class="save-btn-row">
+      <button class="btn-cancel" onclick="closeSaveModal()">取消</button>
+      <button class="btn-save" onclick="saveCurrentScheme()">保存当前</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom numpad for mobile -->
+<div class="numpad-bar" id="numpad">
+  <div class="numpad-row">
+    <button class="nk" data-v="1">1</button>
+    <button class="nk" data-v="2">2</button>
+    <button class="nk" data-v="3">3</button>
+    <button class="nk op" data-v="×">×</button>
+    <button class="nk op" data-v="÷">÷</button>
+  </div>
+  <div class="numpad-row">
+    <button class="nk" data-v="4">4</button>
+    <button class="nk" data-v="5">5</button>
+    <button class="nk" data-v="6">6</button>
+    <button class="nk op" data-v="+">+</button>
+    <button class="nk op" data-v="-">-</button>
+  </div>
+  <div class="numpad-row">
+    <button class="nk" data-v="7">7</button>
+    <button class="nk" data-v="8">8</button>
+    <button class="nk" data-v="9">9</button>
+    <button class="nk op" data-v="(">(</button>
+    <button class="nk op" data-v=")">)</button>
+  </div>
+  <div class="numpad-row">
+    <button class="nk" data-v=".">.</button>
+    <button class="nk" data-v="0">0</button>
+    <button class="nk" data-v="⌫">⌫</button>
+    <button class="nk wide done" data-v="done">完成</button>
+  </div>
+</div>
+
+<script>
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+let items = [];
+let activeItemId = null;
+let labelTargetId = null;
+
+const defaultLabels = [
+  '面粉', '糖', '盐', '油', '奶粉', '鸡蛋',
+  '黄油', '酵母', '添加剂', '包装袋', '纸箱',
+  '标签', '人工', '运费', '水电', '租金'
+];
+
+let customLabels = JSON.parse(localStorage.getItem('fc_custom_labels') || '[]');
+
+function getAllLabels() {
+  return [...new Set([...defaultLabels, ...customLabels])];
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function addItem(label, expr) {
+  const id = uid();
+  items.push({ id, label: label || '', expr: expr || '' });
+  renderItems();
+  if (!expr) {
+    const el = document.querySelector(`[data-id="${id}"] .item-expr`);
+    if (el) el.focus();
+  }
+  recalcTotal();
+  autoSave();
+}
+
+function removeItem(id) {
+  items = items.filter(i => i.id !== id);
+  renderItems();
+  recalcTotal();
+  autoSave();
+}
+
+function evalExpr(raw) {
+  if (!raw.trim()) return null;
+  let s = raw.replace(/×/g, '*').replace(/÷/g, '/').replace(/[^\d.+\-*/().]/g, '');
+  if (!s) return null;
+  try {
+    const result = Function('"use strict"; return (' + s + ')')();
+    if (typeof result === 'number' && isFinite(result)) return result;
+    return null;
+  } catch { return null; }
+}
+
+function recalcTotal() {
+  let total = 0;
+  items.forEach(item => {
+    const v = evalExpr(item.expr);
+    if (v !== null) total += v;
+  });
+  document.getElementById('totalAmount').textContent = '¥' + total.toFixed(2);
+}
+
+function renderItems() {
+  const list = document.getElementById('itemsList');
+  list.innerHTML = items.map(item => {
+    const v = evalExpr(item.expr);
+    const subtotalText = v !== null ? '¥' + v.toFixed(2) : (item.expr.trim() ? '...' : '');
+    const labelClass = item.label ? 'item-label-btn has-label' : 'item-label-btn';
+    const labelText = item.label || '标签';
+    return `<div class="item-card" data-id="${item.id}">
+      <div class="item-row1">
+        <button class="${labelClass}" onclick="openLabelModal('${item.id}')">${esc(labelText)}</button>
+        <input class="item-expr" value="${esc(item.expr)}" placeholder="如: 5.5×100+20"
+          inputmode="none"
+          onfocus="onExprFocus('${item.id}', this)"
+          onblur="onExprBlur()"
+          oninput="onExprInput('${item.id}', this)">
+      </div>
+      <div class="item-row2">
+        <span class="item-subtotal">${subtotalText}</span>
+        <button class="item-delete" onclick="removeItem('${item.id}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function onExprInput(id, el) {
+  const item = items.find(i => i.id === id);
+  if (item) { item.expr = el.value; recalcTotal(); autoSave(); }
+}
+
+function onExprFocus(id, el) {
+  activeItemId = id;
+  if (isMobile) {
+    el.setAttribute('readonly', '');
+    document.getElementById('numpad').classList.add('show');
+  }
+}
+
+function onExprBlur() {
+  // delay to allow numpad clicks
+  setTimeout(() => {
+    if (!document.querySelector('.item-expr:focus')) {
+      // keep numpad if user tapped a numpad button
+    }
+  }, 200);
+}
+
+// Numpad
+document.getElementById('numpad').addEventListener('click', function(e) {
+  const btn = e.target.closest('.nk');
+  if (!btn) return;
+  e.preventDefault();
+  const v = btn.dataset.v;
+  const item = items.find(i => i.id === activeItemId);
+  if (!item) return;
+  const el = document.querySelector(`[data-id="${activeItemId}"] .item-expr`);
+  if (!el) return;
+
+  if (v === 'done') {
+    el.removeAttribute('readonly');
+    el.blur();
+    document.getElementById('numpad').classList.remove('show');
+    return;
+  }
+  if (v === '⌫') {
+    item.expr = item.expr.slice(0, -1);
+  } else {
+    item.expr += v;
+  }
+  el.value = item.expr;
+  recalcTotal();
+  autoSave();
+});
+
+// Label modal
+function openLabelModal(id) {
+  labelTargetId = id;
+  const overlay = document.getElementById('labelOverlay');
+  const presetsDiv = document.getElementById('labelPresets');
+  const labels = getAllLabels();
+  presetsDiv.innerHTML = labels.map(l =>
+    `<button class="label-preset" onclick="setLabel('${esc(l)}')">${esc(l)}</button>`
+  ).join('') + `<button class="label-preset custom" onclick="document.getElementById('labelInput').focus()">+ 自定义</button>`;
+  document.getElementById('labelInput').value = '';
+  overlay.classList.add('show');
+  setTimeout(() => document.getElementById('labelInput').focus(), 100);
+}
+
+function closeLabelModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('labelOverlay').classList.remove('show');
+}
+
+function setLabel(text) {
+  const item = items.find(i => i.id === labelTargetId);
+  if (item) {
+    item.label = text;
+    renderItems();
+    autoSave();
+  }
+  document.getElementById('labelOverlay').classList.remove('show');
+}
+
+function saveLabelFromInput() {
+  const val = document.getElementById('labelInput').value.trim();
+  if (!val) return;
+  if (!customLabels.includes(val) && !defaultLabels.includes(val)) {
+    customLabels.push(val);
+    localStorage.setItem('fc_custom_labels', JSON.stringify(customLabels));
+  }
+  setLabel(val);
+}
+
+// Save/Load
+function showSaveModal() {
+  const overlay = document.getElementById('saveOverlay');
+  renderSaveList();
+  overlay.classList.add('show');
+}
+
+function closeSaveModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('saveOverlay').classList.remove('show');
+}
+
+function getSavedSchemes() {
+  return JSON.parse(localStorage.getItem('fc_schemes') || '[]');
+}
+
+function renderSaveList() {
+  const schemes = getSavedSchemes();
+  const list = document.getElementById('saveList');
+  if (schemes.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:#999;padding:20px">暂无保存的方案</div>';
+    return;
+  }
+  list.innerHTML = schemes.map((s, i) => {
+    const total = s.items.reduce((sum, item) => {
+      const v = evalExpr(item.expr);
+      return sum + (v || 0);
+    }, 0);
+    return `<div class="save-item" onclick="loadScheme(${i})">
+      <div>
+        <div class="name">${esc(s.name)}</div>
+        <div class="meta">${s.items.length}项 · ¥${total.toFixed(2)} · ${s.date}</div>
+      </div>
+      <button class="del-save" onclick="event.stopPropagation();deleteScheme(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function saveCurrentScheme() {
+  const name = document.getElementById('saveName').value.trim();
+  if (!name) { document.getElementById('saveName').focus(); return; }
+  const schemes = getSavedSchemes();
+  const now = new Date();
+  const date = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  schemes.unshift({ name, items: JSON.parse(JSON.stringify(items)), date });
+  localStorage.setItem('fc_schemes', JSON.stringify(schemes));
+  document.getElementById('saveName').value = '';
+  renderSaveList();
+}
+
+function loadScheme(idx) {
+  const schemes = getSavedSchemes();
+  if (!schemes[idx]) return;
+  items = JSON.parse(JSON.stringify(schemes[idx].items));
+  renderItems();
+  recalcTotal();
+  autoSave();
+  closeSaveModal();
+}
+
+function deleteScheme(idx) {
+  const schemes = getSavedSchemes();
+  schemes.splice(idx, 1);
+  localStorage.setItem('fc_schemes', JSON.stringify(schemes));
+  renderSaveList();
+}
+
+// Auto save current session
+function autoSave() {
+  localStorage.setItem('fc_session', JSON.stringify(items));
+}
+
+function autoLoad() {
+  const data = localStorage.getItem('fc_session');
+  if (data) {
+    try { items = JSON.parse(data); } catch { items = []; }
+  }
+  if (items.length === 0) addItem();
+  else { renderItems(); recalcTotal(); }
+}
+
+function clearAll() {
+  if (!confirm('确定清空所有项目？')) return;
+  items = [];
+  addItem();
+}
+
+// Init
+autoLoad();
+</script>
+</body>
+</html>
