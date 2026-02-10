@@ -118,13 +118,22 @@ html,body{
 }
 .token-label.empty{color:var(--text3);font-weight:400;font-size:9px;}
 .token-op{
-  font-size:17px;font-weight:700;color:var(--orange);
-  padding:5px 3px;min-width:18px;text-align:center;align-self:center;
+  background:var(--card2);border-radius:8px;padding:5px 8px;
+  font-size:18px;font-weight:700;color:var(--orange);
+  min-width:32px;text-align:center;align-self:center;
 }
 .token-paren{
-  font-size:22px;font-weight:700;color:var(--yellow);
-  padding:2px 1px;align-self:center;
+  background:rgba(255,214,10,0.08);border-radius:8px;padding:5px 6px;
+  font-size:18px;font-weight:700;color:var(--yellow);
+  min-width:28px;text-align:center;align-self:center;
   text-shadow:0 0 8px rgba(255,214,10,0.3);
+  border:2px solid transparent;transition:all 0.2s;cursor:pointer;
+}
+.token-paren.paren-active{
+  border-color:var(--yellow);background:rgba(255,214,10,0.15);
+}
+.token-paren-hint{
+  font-size:8px;color:var(--text3);margin-top:2px;white-space:nowrap;
 }
 
 .row-expr{
@@ -435,7 +444,7 @@ function renderRows(){
     let previewHtml='';
     row.tokens.forEach((tok,ti)=>{
       if(tok.type==='paren'){
-        previewHtml+=`<div class="token"><div class="token-paren">${esc(tok.value)}</div></div>`;
+        previewHtml+=`<div class="token" data-ri="${ri}" data-ti="${ti}"><div class="token-paren" data-ri="${ri}" data-ti="${ti}">${esc(tok.value)}</div><div class="token-paren-hint">拖/点删</div></div>`;
       }else if(tok.type==='op'){
         previewHtml+=`<div class="token"><div class="token-op">${esc(tok.value)}</div></div>`;
       }else{
@@ -472,6 +481,11 @@ function renderRows(){
   document.getElementById('totalAmount').textContent='¥'+totalVal.toFixed(2);
   document.getElementById('totalRows').textContent=validRows+'项有效';
 
+  // Bind paren drag/remove
+  area.querySelectorAll('.token-paren').forEach(el=>{
+    bindParenDrag(el);
+  });
+
   // Bind touch events (more reliable than click on iOS)
   area.querySelectorAll('.token-num').forEach(el=>{
     el.ontouchend=e=>{
@@ -496,7 +510,7 @@ function renderRows(){
   });
   area.querySelectorAll('.row').forEach(el=>{
     el.ontouchend=e=>{
-      if(e.target.closest('.token-num')||e.target.closest('.token-label')||e.target.closest('.row-del'))return;
+      if(e.target.closest('.token-num')||e.target.closest('.token-label')||e.target.closest('.token-paren')||e.target.closest('.row-del'))return;
       e.preventDefault();
       const ri=+el.dataset.ri;
       activeRow=ri;activeTokenIdx=lastNumIdx(rows[ri]);renderRows();
@@ -624,6 +638,117 @@ function insertParen(row,p){
   }else{
     row.tokens.splice(activeTokenIdx+1,0,{type:'paren',value:')'});
   }
+}
+
+// ====== Paren drag (reposition) & tap (remove) ======
+let parenDrag=null; // {ri, ti, startX, startY, active, el}
+
+function bindParenDrag(el){
+  el.addEventListener('touchstart',onParenDragStart,{passive:true});
+  el.addEventListener('touchmove',onParenDragMove,{passive:false});
+  el.addEventListener('touchend',onParenDragEnd,{passive:false});
+}
+
+function onParenDragStart(e){
+  const ri=+e.currentTarget.dataset.ri,ti=+e.currentTarget.dataset.ti;
+  if(isNaN(ri)||isNaN(ti))return;
+  const t=e.touches[0];
+  const tok=rows[ri]&&rows[ri].tokens[ti];
+  if(!tok||tok.type!=='paren')return;
+  parenDrag={ri,ti,startX:t.clientX,startY:t.clientY,active:false,el:e.currentTarget,value:tok.value};
+  e.currentTarget.classList.add('paren-active');
+  // Prepare ghost
+  ghost.textContent=tok.value;
+  ghost.className='drag-ghost bracket-ghost';
+}
+
+function onParenDragMove(e){
+  if(!parenDrag)return;
+  const t=e.touches[0];
+  const dx=t.clientX-parenDrag.startX,dy=t.clientY-parenDrag.startY;
+  if(!parenDrag.active){
+    if(Math.abs(dx)<DRAG_THRESHOLD&&Math.abs(dy)<DRAG_THRESHOLD)return;
+    parenDrag.active=true;
+    ghost.style.display='block';
+    if(parenDrag.el)parenDrag.el.style.opacity='0.3';
+  }
+  e.preventDefault();
+  ghost.style.left=t.clientX+'px';
+  ghost.style.top=t.clientY+'px';
+
+  // Highlight num tokens as drop targets
+  document.querySelectorAll('.token-num').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const hit=t.clientX>=r.left-20&&t.clientX<=r.right+20&&t.clientY>=r.top-10&&t.clientY<=r.bottom+10;
+    if(hit)el.classList.add('drop-hover');
+    else el.classList.remove('drop-hover');
+  });
+}
+
+function onParenDragEnd(e){
+  ghost.style.display='none';
+  document.querySelectorAll('.drop-hover').forEach(el=>el.classList.remove('drop-hover'));
+  if(!parenDrag)return;
+
+  const{ri,ti,active,value}=parenDrag;
+  if(parenDrag.el){parenDrag.el.classList.remove('paren-active');parenDrag.el.style.opacity='';}
+
+  if(!active){
+    // TAP → remove this paren
+    e.preventDefault();
+    const row=rows[ri];
+    if(row&&row.tokens[ti]&&row.tokens[ti].type==='paren'){
+      row.tokens.splice(ti,1);
+      if(!row.tokens.length)row.tokens.push({type:'num',value:'',label:''});
+      // Fix activeTokenIdx
+      if(ri===activeRow&&activeTokenIdx>=ti&&activeTokenIdx>0)activeTokenIdx--;
+      if(activeTokenIdx>=row.tokens.length)activeTokenIdx=lastNumIdx(row);
+      persist();renderRows();
+    }
+    parenDrag=null;return;
+  }
+
+  // DRAG → reposition: remove from old pos, insert at nearest num
+  e.preventDefault();
+  const touch=e.changedTouches[0];
+  let best=null,bestDist=Infinity;
+  document.querySelectorAll('.token-num').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const d=Math.hypot(touch.clientX-cx,touch.clientY-cy);
+    if(d<bestDist&&d<120){bestDist=d;best={ri:+el.dataset.ri,ti:+el.dataset.ti}}
+  });
+
+  // Remove old paren first
+  const row=rows[ri];
+  if(row&&row.tokens[ti]&&row.tokens[ti].type==='paren'){
+    row.tokens.splice(ti,1);
+    if(!row.tokens.length)row.tokens.push({type:'num',value:'',label:''});
+    // Adjust activeTokenIdx
+    if(ri===activeRow&&activeTokenIdx>ti)activeTokenIdx--;
+
+    if(best){
+      // Adjust target index if in same row and after removed position
+      let targetRi=best.ri,targetTi=best.ti;
+      if(targetRi===ri&&targetTi>ti)targetTi--;
+
+      const targetRow=rows[targetRi];
+      if(targetRow){
+        if(value==='('){
+          targetRow.tokens.splice(targetTi,0,{type:'paren',value:'('});
+          if(targetRi===activeRow&&activeTokenIdx>=targetTi)activeTokenIdx++;
+        }else{
+          targetRow.tokens.splice(targetTi+1,0,{type:'paren',value:')'});
+          if(targetRi===activeRow&&activeTokenIdx>targetTi)activeTokenIdx++;
+        }
+        spawnParticles(touch.clientX,touch.clientY);
+      }
+    }
+    // If no target found, paren is just removed (dragged to nowhere)
+  }
+
+  persist();renderRows();
+  parenDrag=null;
 }
 
 // ====== Drag & Drop (with threshold to distinguish tap from drag) ======
