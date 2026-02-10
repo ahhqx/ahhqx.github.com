@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>食品成本计算器</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#0a0a0a;--card:#1c1c1e;--card2:#2c2c2e;
   --primary:#0a84ff;--green:#30d158;--orange:#ff9f0a;--red:#ff453a;--yellow:#ffd60a;
@@ -19,10 +19,10 @@ html,body{
   background:var(--bg);color:var(--text);
   height:100%;overflow:hidden;
   position:fixed;width:100%;
+  touch-action:none;
 }
 #app{display:flex;flex-direction:column;height:100%;}
 
-/* Header */
 .header{
   padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top));
   display:flex;align-items:center;justify-content:space-between;
@@ -38,7 +38,6 @@ html,body{
 .hdr-btn:active{background:rgba(10,132,255,0.15);}
 .hdr-btn.danger{color:var(--red);}
 
-/* Total */
 .total-section{
   padding:14px 20px;flex-shrink:0;
   background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
@@ -53,19 +52,17 @@ html,body{
 /* Labels tray */
 .labels-tray{
   padding:8px 16px;flex-shrink:0;
-  border-bottom:0.5px solid var(--border);
-  background:var(--bg);
+  border-bottom:0.5px solid var(--border);background:var(--bg);
 }
 .labels-tray-hint{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:0.3px;margin-bottom:6px;}
-.labels-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+.labels-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;touch-action:pan-x;}
 .labels-scroll::-webkit-scrollbar{display:none;}
 .tag{
   flex-shrink:0;padding:5px 12px;border-radius:16px;font-size:12px;font-weight:600;
-  cursor:grab;-webkit-user-select:none;user-select:none;
+  -webkit-user-select:none;user-select:none;
   border:1.5px solid var(--border);color:var(--text);background:var(--card);
   transition:transform 0.15s,box-shadow 0.15s;position:relative;
 }
-.tag:active{transform:scale(1.05);}
 .tag.dragging{opacity:0.4;transform:scale(0.95);}
 .tag.c0{border-color:#ff6b6b;color:#ff6b6b;background:rgba(255,107,107,0.1);}
 .tag.c1{border-color:#ffa94d;color:#ffa94d;background:rgba(255,169,77,0.1);}
@@ -75,15 +72,21 @@ html,body{
 .tag.c5{border-color:#b197fc;color:#b197fc;background:rgba(177,151,252,0.1);}
 .tag.c6{border-color:#e599f7;color:#e599f7;background:rgba(229,153,247,0.1);}
 .tag.c7{border-color:#fcc2d7;color:#fcc2d7;background:rgba(252,194,215,0.1);}
-/* Bracket tags */
 .tag.bracket{
   border-color:var(--yellow);color:var(--yellow);background:rgba(255,214,10,0.08);
   font-weight:700;font-size:14px;letter-spacing:1px;padding:5px 14px;
 }
 .tag-add{border-style:dashed;color:var(--text3);border-color:var(--text3);font-weight:500;}
+.tag-del{
+  position:absolute;top:-6px;right:-6px;width:16px;height:16px;
+  background:var(--red);color:#fff;border:none;border-radius:50%;
+  font-size:10px;line-height:16px;text-align:center;cursor:pointer;
+  display:none;
+}
+.tag.editing .tag-del{display:block;}
 
 /* Rows area */
-.rows-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px;}
+.rows-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px;touch-action:pan-y;}
 .row{
   background:var(--card);border-radius:14px;margin-bottom:8px;
   padding:10px 12px 8px;position:relative;
@@ -91,7 +94,6 @@ html,body{
 }
 .row.active{border-color:rgba(10,132,255,0.3);}
 
-/* Preview: big tokens with labels */
 .row-preview{
   display:flex;align-items:flex-end;gap:2px;flex-wrap:wrap;
   min-height:48px;margin-bottom:6px;
@@ -102,6 +104,7 @@ html,body{
   font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;
   min-width:32px;text-align:center;
   border:2px solid transparent;transition:all 0.2s;position:relative;
+  cursor:pointer;
 }
 .token-num.active-token{border-color:var(--primary);background:rgba(10,132,255,0.1);}
 .token-num.drop-hover{
@@ -111,36 +114,19 @@ html,body{
 .token-label{
   font-size:9px;font-weight:600;letter-spacing:0.2px;
   margin-top:2px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  padding:1px 5px;border-radius:3px;
+  padding:1px 5px;border-radius:3px;cursor:pointer;
 }
 .token-label.empty{color:var(--text3);font-weight:400;font-size:9px;}
 .token-op{
   font-size:17px;font-weight:700;color:var(--orange);
-  padding:5px 3px;min-width:18px;text-align:center;
-  align-self:center;
+  padding:5px 3px;min-width:18px;text-align:center;align-self:center;
 }
 .token-paren{
   font-size:22px;font-weight:700;color:var(--yellow);
   padding:2px 1px;align-self:center;
   text-shadow:0 0 8px rgba(255,214,10,0.3);
 }
-/* Bracket drop zones */
-.bracket-drop{
-  width:16px;min-height:40px;align-self:stretch;
-  border:2px dashed transparent;border-radius:6px;
-  transition:all 0.25s;display:flex;align-items:center;justify-content:center;
-}
-.bracket-drop.drop-hover{
-  border-color:var(--yellow);background:rgba(255,214,10,0.08);
-  box-shadow:0 0 12px rgba(255,214,10,0.2);
-}
-.bracket-drop.drop-hover::after{
-  content:'';width:2px;height:24px;background:var(--yellow);border-radius:1px;
-  animation:bracket-pulse 0.6s ease-in-out infinite alternate;
-}
-@keyframes bracket-pulse{from{opacity:0.3;height:16px}to{opacity:1;height:28px}}
 
-/* Raw expression line */
 .row-expr{
   display:flex;align-items:center;justify-content:space-between;
   padding-top:6px;border-top:0.5px solid var(--border);
@@ -181,16 +167,15 @@ html,body{
   -webkit-user-select:none;user-select:none;
   color:var(--text);background:var(--card2);
   transition:background 0.1s;
+  touch-action:manipulation;
 }
-.nk:active{background:#4a4a4e;}
+.nk:active,.nk.pressed{background:#4a4a4e;}
 .nk.op{background:#4a4a4e;color:var(--orange);font-weight:700;}
-.nk.op:active{background:#5a5a5e;}
+.nk.op:active,.nk.op.pressed{background:#5a5a5e;}
 .nk.paren{background:rgba(255,214,10,0.12);color:var(--yellow);font-weight:700;font-size:22px;}
-.nk.paren:active{background:rgba(255,214,10,0.25);}
+.nk.paren:active,.nk.paren.pressed{background:rgba(255,214,10,0.25);}
 .nk.fn{background:var(--card2);color:var(--text2);font-size:14px;font-weight:500;}
-.nk.fn:active{background:#4a4a4e;}
-.nk.enter{background:var(--primary);color:#fff;font-weight:600;font-size:15px;}
-.nk.enter:active{background:#0070e0;}
+.nk.fn:active,.nk.fn.pressed{background:#4a4a4e;}
 .nk.wide2{flex:2;}
 
 /* Drag ghost */
@@ -199,7 +184,7 @@ html,body{
   padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;
   box-shadow:0 12px 40px rgba(0,0,0,0.6);
   transform:translate(-50%,-50%) scale(1.2);
-  opacity:0.95;transition:transform 0.1s;
+  opacity:0.95;
 }
 .drag-ghost.bracket-ghost{
   font-size:24px;padding:8px 16px;
@@ -213,7 +198,6 @@ html,body{
   to{box-shadow:0 0 40px rgba(255,214,10,0.6),0 12px 40px rgba(0,0,0,0.5)}
 }
 
-/* Particle burst on bracket drop */
 .particle-container{position:fixed;pointer-events:none;z-index:9998;}
 .particle{
   position:absolute;width:6px;height:6px;border-radius:50%;
@@ -226,10 +210,7 @@ html,body{
 }
 
 /* Picker */
-.picker-overlay{
-  display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,0.5);
-}
+.picker-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);}
 .picker-overlay.show{display:flex;align-items:flex-end;justify-content:center;}
 .picker{
   background:var(--card);border-radius:16px 16px 0 0;
@@ -241,28 +222,29 @@ html,body{
 .picker-tag{
   padding:8px 16px;border-radius:20px;font-size:14px;font-weight:500;
   cursor:pointer;border:1.5px solid var(--border);color:var(--text);background:var(--card2);
+  touch-action:manipulation;
 }
 .picker-tag:active{opacity:0.7;}
 .picker-input-row{display:flex;gap:8px;margin-bottom:8px;}
 .picker-input{
   flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;
-  padding:10px 14px;font-size:15px;color:var(--text);outline:none;
+  padding:10px 14px;font-size:16px;color:var(--text);outline:none;
 }
 .picker-input:focus{border-color:var(--primary);}
 .picker-ok{
   background:var(--primary);color:#fff;border:none;border-radius:10px;
-  padding:10px 18px;font-size:15px;font-weight:500;cursor:pointer;
+  padding:10px 18px;font-size:15px;font-weight:500;cursor:pointer;touch-action:manipulation;
 }
 .picker-clear{
   background:none;border:1.5px solid var(--border);color:var(--text2);
   border-radius:10px;padding:10px 18px;font-size:15px;cursor:pointer;font-weight:500;flex:1;
+  touch-action:manipulation;
 }
 .picker-bottom{display:flex;gap:8px;}
+.picker-empty{text-align:center;color:var(--text3);padding:16px;font-size:13px;}
 
 /* Save modal */
-.modal-overlay{
-  display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);
-}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);}
 .modal-overlay.show{display:flex;align-items:center;justify-content:center;}
 .modal{background:var(--card);border-radius:16px;width:90%;max-width:400px;padding:20px;}
 .modal h3{font-size:17px;font-weight:600;margin-bottom:16px;text-align:center;}
@@ -277,11 +259,11 @@ html,body{
 .modal-item .mi-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 8px;}
 .modal-input{
   width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;
-  padding:10px 14px;font-size:15px;color:var(--text);outline:none;margin-bottom:12px;
+  padding:10px 14px;font-size:16px;color:var(--text);outline:none;margin-bottom:12px;
 }
 .modal-input:focus{border-color:var(--primary);}
 .modal-btns{display:flex;gap:8px;}
-.modal-btns button{flex:1;border:none;border-radius:10px;padding:12px;font-size:15px;cursor:pointer;font-weight:500;}
+.modal-btns button{flex:1;border:none;border-radius:10px;padding:12px;font-size:15px;cursor:pointer;font-weight:500;touch-action:manipulation;}
 .mbtn-cancel{background:var(--card2);color:var(--text);}
 .mbtn-ok{background:var(--primary);color:#fff;}
 </style>
@@ -307,13 +289,13 @@ html,body{
   </div>
 
   <div class="labels-tray">
-    <div class="labels-tray-hint">长按拖拽标签 / 括号到数字上</div>
+    <div class="labels-tray-hint">长按拖拽标签到数字上 · 点击标签给选中数字贴</div>
     <div class="labels-scroll" id="labelsScroll"></div>
   </div>
 
   <div class="rows-area" id="rowsArea"></div>
 
-  <div class="numpad">
+  <div class="numpad" id="numpad">
     <div class="np-row">
       <button class="nk fn" data-v="label">标签</button>
       <button class="nk paren" data-v="(">(</button>
@@ -352,7 +334,7 @@ html,body{
     <h3>给数字贴标签</h3>
     <div class="picker-tags" id="pickerTags"></div>
     <div class="picker-input-row">
-      <input class="picker-input" id="pickerInput" placeholder="自定义标签">
+      <input class="picker-input" id="pickerInput" placeholder="输入新标签名称">
       <button class="picker-ok" id="pickerOk">确定</button>
     </div>
     <div class="picker-bottom">
@@ -376,71 +358,97 @@ html,body{
 <div class="drag-ghost" id="dragGhost" style="display:none"></div>
 
 <script>
+// ====== Constants & State ======
 const TAG_COLORS=['c0','c1','c2','c3','c4','c5','c6','c7'];
-const DEFAULT_LABELS=['面粉','糖','盐','油','奶粉','鸡蛋','黄油','酵母','添加剂','包装袋','纸箱','标签贴','人工','运费','水电','租金'];
-let customLabels=load('fc3_labels',[]);
-// tokens: {type:'num'|'op'|'paren', value:string, label?:string}
-let rows=load('fc3_rows',[]);
-let activeRow=0, activeTokenIdx=-1;
+const DRAG_THRESHOLD=10; // px before drag starts
+
+let labelHistory=load('fc4_label_history',[]); // user's label history, no defaults
+let rows=load('fc4_rows',[]);
+let activeRow=0,activeTokenIdx=-1;
 let pickerTarget=null;
 
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function allLabels(){return[...new Set([...DEFAULT_LABELS,...customLabels])]}
-function tagColor(l){const a=allLabels(),i=a.indexOf(l);return TAG_COLORS[((i>=0?i:l.length)%TAG_COLORS.length)]}
+function tagColor(l){const i=labelHistory.indexOf(l);return TAG_COLORS[((i>=0?i:l.length)%TAG_COLORS.length)]}
 function labelHex(l){const m={c0:'#ff6b6b',c1:'#ffa94d',c2:'#ffd43b',c3:'#69db7c',c4:'#74c0fc',c5:'#b197fc',c6:'#e599f7',c7:'#fcc2d7'};return m[tagColor(l)]||'#98989f'}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function makeRow(){return{tokens:[{type:'num',value:'',label:''}]}}
-function persist(){save('fc3_rows',rows)}
+function persist(){save('fc4_rows',rows)}
+function lastNumIdx(row){for(let i=row.tokens.length-1;i>=0;i--)if(row.tokens[i].type==='num')return i;return 0}
+
+// Add label to history (most recent first, dedup)
+function recordLabel(label){
+  if(!label)return;
+  labelHistory=labelHistory.filter(l=>l!==label);
+  labelHistory.unshift(label);
+  if(labelHistory.length>50)labelHistory=labelHistory.slice(0,50);
+  save('fc4_label_history',labelHistory);
+}
+
+function removeLabel(label){
+  labelHistory=labelHistory.filter(l=>l!==label);
+  save('fc4_label_history',labelHistory);
+  renderLabels();
+}
 
 if(!rows.length) rows.push(makeRow());
 
 // ====== Render labels tray ======
 function renderLabels(){
   const el=document.getElementById('labelsScroll');
-  const labels=allLabels();
   el.innerHTML=
     `<div class="tag bracket" data-bracket="(">(</div>`+
     `<div class="tag bracket" data-bracket=")">)</div>`+
-    labels.map(l=>`<div class="tag ${tagColor(l)}" data-label="${esc(l)}">${esc(l)}</div>`).join('')+
-    `<div class="tag tag-add" id="tagAdd">+ 新标签</div>`;
-  el.querySelectorAll('.tag:not(.tag-add)').forEach(bindDrag);
-  document.getElementById('tagAdd').onclick=promptNewLabel;
+    labelHistory.map(l=>`<div class="tag ${tagColor(l)}" data-label="${esc(l)}">${esc(l)}<button class="tag-del" data-del="${esc(l)}">×</button></div>`).join('')+
+    `<div class="tag tag-add" id="tagAdd">+</div>`;
+
+  // Bind drag on label & bracket tags
+  el.querySelectorAll('.tag[data-label],.tag[data-bracket]').forEach(bindDrag);
+
+  // Delete buttons on tags (long press shows, but we use explicit button)
+  el.querySelectorAll('.tag-del').forEach(btn=>{
+    btn.ontouchstart=e=>{e.stopPropagation()};
+    btn.onclick=e=>{e.stopPropagation();removeLabel(btn.dataset.del)};
+  });
+
+  // Add button
+  const addBtn=document.getElementById('tagAdd');
+  if(addBtn){
+    addBtn.ontouchend=e=>{e.preventDefault();promptNewLabel()};
+    addBtn.onclick=promptNewLabel;
+  }
 }
 
 function promptNewLabel(){
   const n=prompt('输入新标签名称');
   if(!n||!n.trim())return;
-  const t=n.trim();
-  if(!customLabels.includes(t)&&!DEFAULT_LABELS.includes(t)){customLabels.push(t);save('fc3_labels',customLabels)}
+  recordLabel(n.trim());
   renderLabels();
 }
 
 // ====== Render rows ======
 function renderRows(){
   const area=document.getElementById('rowsArea');
-  let totalVal=0, validRows=0;
+  let totalVal=0,validRows=0;
 
   area.innerHTML=rows.map((row,ri)=>{
-    // Build preview tokens
     let previewHtml='';
     row.tokens.forEach((tok,ti)=>{
       if(tok.type==='paren'){
         previewHtml+=`<div class="token"><div class="token-paren">${esc(tok.value)}</div></div>`;
-      } else if(tok.type==='op'){
+      }else if(tok.type==='op'){
         previewHtml+=`<div class="token"><div class="token-op">${esc(tok.value)}</div></div>`;
-      } else {
+      }else{
         const isActive=(ri===activeRow&&ti===activeTokenIdx);
         const numCls='token-num'+(isActive?' active-token':'');
         const display=tok.value||'<span style="color:var(--text3)">_</span>';
         const lbl=tok.label
-          ?`<div class="token-label" style="color:${labelHex(tok.label)}">${esc(tok.label)}</div>`
-          :`<div class="token-label empty">标签</div>`;
+          ?`<div class="token-label" data-ri="${ri}" data-ti="${ti}" style="color:${labelHex(tok.label)}">${esc(tok.label)}</div>`
+          :`<div class="token-label empty" data-ri="${ri}" data-ti="${ti}">标签</div>`;
         previewHtml+=`<div class="token" data-ri="${ri}" data-ti="${ti}"><div class="${numCls}" data-ri="${ri}" data-ti="${ti}">${display}</div>${lbl}</div>`;
       }
     });
 
-    // Build raw expression string
     const rawExpr=row.tokens.map(t=>{
       if(t.type==='paren')return t.value;
       if(t.type==='op')return' '+t.value+' ';
@@ -451,7 +459,7 @@ function renderRows(){
     const subText=sub!==null?'= ¥'+sub.toFixed(2):'';
     if(sub!==null){totalVal+=sub;validRows++}
 
-    return `<div class="row${ri===activeRow?' active':''}" data-ri="${ri}">
+    return`<div class="row${ri===activeRow?' active':''}" data-ri="${ri}">
       <div class="row-preview">${previewHtml}</div>
       <div class="row-expr">
         <span class="row-expr-text">${esc(rawExpr)}</span>
@@ -464,43 +472,44 @@ function renderRows(){
   document.getElementById('totalAmount').textContent='¥'+totalVal.toFixed(2);
   document.getElementById('totalRows').textContent=validRows+'项有效';
 
-  // Bind events
+  // Bind touch events (more reliable than click on iOS)
   area.querySelectorAll('.token-num').forEach(el=>{
-    el.addEventListener('click',e=>{
+    el.ontouchend=e=>{
+      e.preventDefault();
       activeRow=+el.dataset.ri;activeTokenIdx=+el.dataset.ti;renderRows();
-    });
+    };
   });
   area.querySelectorAll('.token-label').forEach(el=>{
-    el.addEventListener('click',e=>{
-      const tk=el.closest('.token');
-      if(!tk)return;
-      openPicker(+tk.dataset.ri,+tk.dataset.ti);
-    });
+    el.ontouchend=e=>{
+      e.preventDefault();
+      openPicker(+el.dataset.ri,+el.dataset.ti);
+    };
   });
   area.querySelectorAll('.row-del').forEach(el=>{
-    el.addEventListener('click',e=>{
-      e.stopPropagation();
+    el.ontouchend=e=>{
+      e.preventDefault();e.stopPropagation();
       const ri=+el.dataset.ri;
       if(rows.length<=1){rows=[makeRow()];activeRow=0;activeTokenIdx=0;}
       else{rows.splice(ri,1);if(activeRow>=rows.length)activeRow=rows.length-1;activeTokenIdx=lastNumIdx(rows[activeRow]);}
       persist();renderRows();
-    });
+    };
   });
   area.querySelectorAll('.row').forEach(el=>{
-    el.addEventListener('click',e=>{
+    el.ontouchend=e=>{
       if(e.target.closest('.token-num')||e.target.closest('.token-label')||e.target.closest('.row-del'))return;
+      e.preventDefault();
       const ri=+el.dataset.ri;
       activeRow=ri;activeTokenIdx=lastNumIdx(rows[ri]);renderRows();
-    });
+    };
   });
-  document.getElementById('addRowBtn').addEventListener('click',()=>{
+  const addBtn=document.getElementById('addRowBtn');
+  addBtn.ontouchend=e=>{
+    e.preventDefault();
     rows.push(makeRow());activeRow=rows.length-1;activeTokenIdx=0;
     persist();renderRows();
     document.getElementById('rowsArea').scrollTop=99999;
-  });
+  };
 }
-
-function lastNumIdx(row){for(let i=row.tokens.length-1;i>=0;i--)if(row.tokens[i].type==='num')return i;return 0}
 
 // ====== Eval ======
 function evalRow(row){
@@ -518,12 +527,27 @@ function evalRow(row){
   try{const r=Function('"use strict";return('+expr+')')();return typeof r==='number'&&isFinite(r)?r:null}catch{return null}
 }
 
-// ====== Numpad ======
+// ====== Numpad (use touchend for iOS reliability) ======
+document.getElementById('numpad').addEventListener('touchend',e=>{
+  const btn=e.target.closest('.nk');
+  if(!btn)return;
+  e.preventDefault();
+  btn.classList.add('pressed');
+  setTimeout(()=>btn.classList.remove('pressed'),100);
+
+  const v=btn.dataset.v;
+  handleNumpad(v);
+},{passive:false});
+
+// Also support mouse click for desktop
 document.getElementById('numpad').addEventListener('click',e=>{
   const btn=e.target.closest('.nk');
   if(!btn)return;
   e.preventDefault();
-  const v=btn.dataset.v;
+  handleNumpad(btn.dataset.v);
+});
+
+function handleNumpad(v){
   const row=rows[activeRow];
   if(!row)return;
 
@@ -543,9 +567,8 @@ document.getElementById('numpad').addEventListener('click',e=>{
     if(tok.type==='num'&&tok.value.length>0){
       tok.value=tok.value.slice(0,-1);
     }else if(tok.type==='num'&&activeTokenIdx>0){
-      // Remove empty num + preceding op or paren
       const prev=row.tokens[activeTokenIdx-1];
-      if(prev&&(prev.type==='op')){
+      if(prev&&prev.type==='op'){
         row.tokens.splice(activeTokenIdx-1,2);
         activeTokenIdx=Math.max(0,activeTokenIdx-2);
       }else if(prev&&prev.type==='paren'){
@@ -563,20 +586,15 @@ document.getElementById('numpad').addEventListener('click',e=>{
     persist();renderRows();return;
   }
 
-  // Parentheses from numpad
   if(v==='('||v===')'){
-    insertParen(row,v);
-    persist();renderRows();return;
+    insertParen(row,v);persist();renderRows();return;
   }
 
-  // Operators
   if(['+','-','×','÷'].includes(v)){
     if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
     const cur=row.tokens[activeTokenIdx];
     if(!cur)return;
-    // Allow op after ), or after a num with value
     if(cur.type==='num'&&!cur.value)return;
-    // Insert after current position
     const insertAt=activeTokenIdx+1;
     row.tokens.splice(insertAt,0,{type:'op',value:v},{type:'num',value:'',label:''});
     activeTokenIdx=insertAt+1;
@@ -586,7 +604,6 @@ document.getElementById('numpad').addEventListener('click',e=>{
   // Number/dot
   if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
   let tok=row.tokens[activeTokenIdx];
-  // If current token is paren, create num after it
   if(tok&&tok.type==='paren'){
     const insertAt=activeTokenIdx+1;
     row.tokens.splice(insertAt,0,{type:'num',value:'',label:''});
@@ -597,32 +614,26 @@ document.getElementById('numpad').addEventListener('click',e=>{
   if(v==='.'&&tok.value.includes('.'))return;
   tok.value+=v;
   persist();renderRows();
-});
+}
 
 function insertParen(row,p){
   if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
-  const cur=row.tokens[activeTokenIdx];
   if(p==='('){
-    // Insert ( before current token
     row.tokens.splice(activeTokenIdx,0,{type:'paren',value:'('});
     activeTokenIdx++;
   }else{
-    // Insert ) after current token
-    const insertAt=activeTokenIdx+1;
-    row.tokens.splice(insertAt,0,{type:'paren',value:')'});
-    // Keep activeTokenIdx the same
+    row.tokens.splice(activeTokenIdx+1,0,{type:'paren',value:')'});
   }
 }
 
-// ====== Drag & Drop ======
-let dragData=null; // {type:'label'|'bracket', value:string}
-let dragActive=false;
+// ====== Drag & Drop (with threshold to distinguish tap from drag) ======
+let dragData=null,dragActive=false,dragStartX=0,dragStartY=0,dragEl=null;
 const ghost=document.getElementById('dragGhost');
 
 function bindDrag(el){
-  el.addEventListener('touchstart',onDragStart,{passive:false});
+  el.addEventListener('touchstart',onDragStart,{passive:true});
   el.addEventListener('touchmove',onDragMove,{passive:false});
-  el.addEventListener('touchend',onDragEnd);
+  el.addEventListener('touchend',onDragEnd,{passive:false});
 }
 
 function onDragStart(e){
@@ -632,6 +643,10 @@ function onDragStart(e){
   else if(bracket)dragData={type:'bracket',value:bracket};
   else return;
   dragActive=false;
+  dragEl=e.currentTarget;
+  const t=e.touches[0];
+  dragStartX=t.clientX;
+  dragStartY=t.clientY;
 
   if(dragData.type==='bracket'){
     ghost.textContent=dragData.value;
@@ -639,51 +654,66 @@ function onDragStart(e){
   }else{
     ghost.textContent=dragData.value;
     ghost.className='drag-ghost '+tagColor(dragData.value);
-    ghost.style.background=getComputedStyle(e.currentTarget).background;
-    ghost.style.color=getComputedStyle(e.currentTarget).color;
-    ghost.style.border='1.5px solid '+getComputedStyle(e.currentTarget).borderColor;
+    const cs=getComputedStyle(e.currentTarget);
+    ghost.style.background=cs.background;
+    ghost.style.color=cs.color;
+    ghost.style.border='1.5px solid '+cs.borderColor;
   }
 }
 
 function onDragMove(e){
-  e.preventDefault();
   if(!dragData)return;
-  const touch=e.touches[0];
+  const t=e.touches[0];
+  const dx=t.clientX-dragStartX,dy=t.clientY-dragStartY;
+
+  // Only start drag after threshold
   if(!dragActive){
+    if(Math.abs(dx)<DRAG_THRESHOLD&&Math.abs(dy)<DRAG_THRESHOLD)return;
     dragActive=true;
     ghost.style.display='block';
-    e.currentTarget.classList.add('dragging');
+    if(dragEl)dragEl.classList.add('dragging');
   }
-  ghost.style.left=touch.clientX+'px';
-  ghost.style.top=touch.clientY+'px';
+
+  e.preventDefault(); // only prevent default AFTER drag starts
+  ghost.style.left=t.clientX+'px';
+  ghost.style.top=t.clientY+'px';
 
   // Highlight targets
-  if(dragData.type==='label'){
-    document.querySelectorAll('.token-num').forEach(el=>{
-      const r=el.getBoundingClientRect();
-      if(touch.clientX>=r.left&&touch.clientX<=r.right&&touch.clientY>=r.top&&touch.clientY<=r.bottom)
-        el.classList.add('drop-hover');
-      else el.classList.remove('drop-hover');
-    });
-  }else{
-    // For brackets, highlight gaps between tokens
-    document.querySelectorAll('.token-num').forEach(el=>{
-      const r=el.getBoundingClientRect();
-      const inX=touch.clientX>=r.left-20&&touch.clientX<=r.right+20;
-      const inY=touch.clientY>=r.top-10&&touch.clientY<=r.bottom+10;
-      if(inX&&inY)el.classList.add('drop-hover');
-      else el.classList.remove('drop-hover');
-    });
-  }
+  document.querySelectorAll('.token-num').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const pad=dragData.type==='bracket'?20:0;
+    const hit=t.clientX>=r.left-pad&&t.clientX<=r.right+pad&&t.clientY>=r.top-10&&t.clientY<=r.bottom+10;
+    if(hit)el.classList.add('drop-hover');
+    else el.classList.remove('drop-hover');
+  });
 }
 
 function onDragEnd(e){
   ghost.style.display='none';
-  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+  if(dragEl)dragEl.classList.remove('dragging');
   document.querySelectorAll('.drop-hover').forEach(el=>el.classList.remove('drop-hover'));
 
-  if(!dragActive||!dragData){dragData=null;return}
+  if(!dragData){return}
 
+  // TAP (no drag) → apply label to active num, or insert bracket at cursor
+  if(!dragActive){
+    e.preventDefault();
+    if(dragData.type==='label'){
+      // Tap label tag → apply to currently selected num
+      if(activeTokenIdx>=0&&rows[activeRow]&&rows[activeRow].tokens[activeTokenIdx]&&rows[activeRow].tokens[activeTokenIdx].type==='num'){
+        rows[activeRow].tokens[activeTokenIdx].label=dragData.value;
+        recordLabel(dragData.value);
+        persist();renderRows();renderLabels();
+      }
+    }else{
+      // Tap bracket → insert at cursor
+      const row=rows[activeRow];
+      if(row){insertParen(row,dragData.value);persist();renderRows();}
+    }
+    dragData=null;dragEl=null;return;
+  }
+
+  // DRAG completed
   const touch=e.changedTouches[0];
   let dropped=false;
 
@@ -694,77 +724,75 @@ function onDragEnd(e){
         const ri=+el.dataset.ri,ti=+el.dataset.ti;
         if(rows[ri]&&rows[ri].tokens[ti]&&rows[ri].tokens[ti].type==='num'){
           rows[ri].tokens[ti].label=dragData.value;
+          recordLabel(dragData.value);
           dropped=true;
         }
       }
     });
   }else{
-    // Bracket drop: find nearest token-num and insert bracket
     let best=null,bestDist=Infinity;
     document.querySelectorAll('.token-num').forEach(el=>{
       const r=el.getBoundingClientRect();
       const cx=r.left+r.width/2,cy=r.top+r.height/2;
       const d=Math.hypot(touch.clientX-cx,touch.clientY-cy);
-      if(d<bestDist&&d<100){bestDist=d;best={ri:+el.dataset.ri,ti:+el.dataset.ti,rect:r}}
+      if(d<bestDist&&d<100){bestDist=d;best={ri:+el.dataset.ri,ti:+el.dataset.ti}}
     });
     if(best){
-      const ri=best.ri,ti=best.ti;
-      const row=rows[ri];
+      const row=rows[best.ri];
       if(row){
         const p=dragData.value;
         if(p==='('){
-          row.tokens.splice(ti,0,{type:'paren',value:'('});
-          if(ri===activeRow&&activeTokenIdx>=ti)activeTokenIdx++;
+          row.tokens.splice(best.ti,0,{type:'paren',value:'('});
+          if(best.ri===activeRow&&activeTokenIdx>=best.ti)activeTokenIdx++;
         }else{
-          row.tokens.splice(ti+1,0,{type:'paren',value:')'});
+          row.tokens.splice(best.ti+1,0,{type:'paren',value:')'});
         }
         dropped=true;
-        // Particle effect
         spawnParticles(touch.clientX,touch.clientY);
       }
     }
   }
 
-  if(dropped){persist();renderRows()}
-  dragData=null;dragActive=false;
+  if(dropped){persist();renderRows();renderLabels();}
+  dragData=null;dragActive=false;dragEl=null;
 }
 
-// ====== Particle Effect ======
+// ====== Particles ======
 function spawnParticles(x,y){
-  const container=document.createElement('div');
-  container.className='particle-container';
-  container.style.left=x+'px';container.style.top=y+'px';
-  document.body.appendChild(container);
+  const c=document.createElement('div');
+  c.className='particle-container';c.style.left=x+'px';c.style.top=y+'px';
+  document.body.appendChild(c);
   const colors=['#ffd60a','#ffed4a','#fff3bf','#ffa94d','#ff9f0a'];
   for(let i=0;i<12;i++){
-    const p=document.createElement('div');
-    p.className='particle';
-    const angle=Math.random()*Math.PI*2;
-    const dist=40+Math.random()*60;
-    const dx=Math.cos(angle)*dist;
-    const dy=Math.sin(angle)*dist;
-    p.style.setProperty('--dx',dx+'px');
-    p.style.setProperty('--dy',dy+'px');
+    const p=document.createElement('div');p.className='particle';
+    const a=Math.random()*Math.PI*2,dist=40+Math.random()*60;
+    p.style.setProperty('--dx',Math.cos(a)*dist+'px');
+    p.style.setProperty('--dy',Math.sin(a)*dist+'px');
     p.style.background=colors[Math.floor(Math.random()*colors.length)];
-    p.style.width=(4+Math.random()*4)+'px';
-    p.style.height=p.style.width;
-    container.appendChild(p);
+    const sz=(4+Math.random()*4)+'px';p.style.width=sz;p.style.height=sz;
+    c.appendChild(p);
   }
-  setTimeout(()=>container.remove(),700);
+  setTimeout(()=>c.remove(),700);
 }
 
-// ====== Picker ======
+// ====== Label Picker ======
 function openPicker(ri,ti){
   pickerTarget={row:ri,tokenIdx:ti};
   const tagsEl=document.getElementById('pickerTags');
-  tagsEl.innerHTML=allLabels().map(l=>
-    `<div class="picker-tag" data-label="${esc(l)}" style="border-color:${labelHex(l)};color:${labelHex(l)};background:rgba(255,255,255,0.05)">${esc(l)}</div>`
-  ).join('');
-  tagsEl.querySelectorAll('.picker-tag').forEach(el=>{
-    el.onclick=()=>applyLabel(el.dataset.label);
-  });
+  if(labelHistory.length===0){
+    tagsEl.innerHTML='<div class="picker-empty">还没有标签，在下方输入创建</div>';
+  }else{
+    tagsEl.innerHTML=labelHistory.map(l=>
+      `<div class="picker-tag" data-label="${esc(l)}" style="border-color:${labelHex(l)};color:${labelHex(l)};background:rgba(255,255,255,0.05)">${esc(l)}</div>`
+    ).join('');
+    tagsEl.querySelectorAll('.picker-tag').forEach(el=>{
+      el.ontouchend=e=>{e.preventDefault();applyLabel(el.dataset.label)};
+      el.onclick=()=>applyLabel(el.dataset.label);
+    });
+  }
   document.getElementById('pickerInput').value='';
   document.getElementById('pickerOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('pickerInput').focus(),200);
 }
 
 function applyLabel(label){
@@ -772,41 +800,57 @@ function applyLabel(label){
   const{row,tokenIdx}=pickerTarget;
   if(rows[row]&&rows[row].tokens[tokenIdx]){
     rows[row].tokens[tokenIdx].label=label;
-    if(label&&!customLabels.includes(label)&&!DEFAULT_LABELS.includes(label)){
-      customLabels.push(label);save('fc3_labels',customLabels);renderLabels();
-    }
-    persist();renderRows();
+    recordLabel(label);
+    persist();renderRows();renderLabels();
   }
   document.getElementById('pickerOverlay').classList.remove('show');
   pickerTarget=null;
 }
-document.getElementById('pickerOk').onclick=()=>{const v=document.getElementById('pickerInput').value.trim();if(v)applyLabel(v)};
-document.getElementById('pickerClear').onclick=()=>{
+
+document.getElementById('pickerOk').ontouchend=e=>{e.preventDefault();doPickerOk()};
+document.getElementById('pickerOk').onclick=doPickerOk;
+function doPickerOk(){const v=document.getElementById('pickerInput').value.trim();if(v)applyLabel(v)}
+
+document.getElementById('pickerClear').ontouchend=e=>{e.preventDefault();doPickerClear()};
+document.getElementById('pickerClear').onclick=doPickerClear;
+function doPickerClear(){
   if(!pickerTarget)return;
   const{row,tokenIdx}=pickerTarget;
   if(rows[row]&&rows[row].tokens[tokenIdx]){rows[row].tokens[tokenIdx].label='';persist();renderRows();}
   document.getElementById('pickerOverlay').classList.remove('show');pickerTarget=null;
-};
-document.getElementById('pickerOverlay').onclick=e=>{
-  if(e.target===e.currentTarget){document.getElementById('pickerOverlay').classList.remove('show');pickerTarget=null}
+}
+
+document.getElementById('pickerOverlay').ontouchend=e=>{
+  if(e.target===e.currentTarget){e.preventDefault();document.getElementById('pickerOverlay').classList.remove('show');pickerTarget=null}
 };
 
 // ====== Save/Load ======
-document.getElementById('btnSave').onclick=()=>{renderSaveList();document.getElementById('modalOverlay').classList.add('show')};
-document.getElementById('modalCancel').onclick=()=>document.getElementById('modalOverlay').classList.remove('show');
-document.getElementById('modalOverlay').onclick=e=>{if(e.target===e.currentTarget)document.getElementById('modalOverlay').classList.remove('show')};
-document.getElementById('modalSave').onclick=()=>{
+document.getElementById('btnSave').ontouchend=e=>{e.preventDefault();openSaveModal()};
+document.getElementById('btnSave').onclick=openSaveModal;
+function openSaveModal(){renderSaveList();document.getElementById('modalOverlay').classList.add('show')}
+
+document.getElementById('modalCancel').ontouchend=e=>{e.preventDefault();closeSaveModal()};
+document.getElementById('modalCancel').onclick=closeSaveModal;
+function closeSaveModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+document.getElementById('modalOverlay').ontouchend=e=>{
+  if(e.target===e.currentTarget){e.preventDefault();closeSaveModal()}
+};
+
+document.getElementById('modalSave').ontouchend=e=>{e.preventDefault();doSave()};
+document.getElementById('modalSave').onclick=doSave;
+function doSave(){
   const name=document.getElementById('modalInput').value.trim();
   if(!name){document.getElementById('modalInput').focus();return}
-  const schemes=load('fc3_schemes',[]);
+  const schemes=load('fc4_schemes',[]);
   const now=new Date();
   const date=`${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
   schemes.unshift({name,rows:JSON.parse(JSON.stringify(rows)),date});
-  save('fc3_schemes',schemes);document.getElementById('modalInput').value='';renderSaveList();
-};
+  save('fc4_schemes',schemes);document.getElementById('modalInput').value='';renderSaveList();
+}
 
 function renderSaveList(){
-  const schemes=load('fc3_schemes',[]);
+  const schemes=load('fc4_schemes',[]);
   const el=document.getElementById('modalList');
   if(!schemes.length){el.innerHTML='<div style="text-align:center;color:var(--text3);padding:20px;font-size:14px">暂无存档</div>';return}
   el.innerHTML=schemes.map((s,i)=>{
@@ -814,26 +858,32 @@ function renderSaveList(){
     return`<div class="modal-item" data-idx="${i}"><div><div class="mi-name">${esc(s.name)}</div><div class="mi-meta">${s.rows.length}行 · ¥${t.toFixed(2)} · ${esc(s.date)}</div></div><button class="mi-del" data-idx="${i}">×</button></div>`;
   }).join('');
   el.querySelectorAll('.modal-item').forEach(item=>{
-    item.onclick=e=>{
+    const handler=e=>{
       if(e.target.classList.contains('mi-del'))return;
-      const idx=+item.dataset.idx;const schemes=load('fc3_schemes',[]);
+      e.preventDefault();
+      const idx=+item.dataset.idx;const schemes=load('fc4_schemes',[]);
       if(schemes[idx]){rows=JSON.parse(JSON.stringify(schemes[idx].rows));activeRow=0;activeTokenIdx=lastNumIdx(rows[0]);persist();renderRows()}
-      document.getElementById('modalOverlay').classList.remove('show');
+      closeSaveModal();
     };
+    item.ontouchend=handler;item.onclick=handler;
   });
   el.querySelectorAll('.mi-del').forEach(btn=>{
-    btn.onclick=e=>{
-      e.stopPropagation();const idx=+btn.dataset.idx;const schemes=load('fc3_schemes',[]);
-      schemes.splice(idx,1);save('fc3_schemes',schemes);renderSaveList();
+    const handler=e=>{
+      e.stopPropagation();e.preventDefault();
+      const idx=+btn.dataset.idx;const schemes=load('fc4_schemes',[]);
+      schemes.splice(idx,1);save('fc4_schemes',schemes);renderSaveList();
     };
+    btn.ontouchend=handler;btn.onclick=handler;
   });
 }
 
-document.getElementById('btnClear').onclick=()=>{
+document.getElementById('btnClear').ontouchend=e=>{e.preventDefault();doClear()};
+document.getElementById('btnClear').onclick=doClear;
+function doClear(){
   if(confirm('确定清空？')){rows=[makeRow()];activeRow=0;activeTokenIdx=0;persist();renderRows()}
-};
+}
 
-// Init
+// ====== Init ======
 activeTokenIdx=lastNumIdx(rows[activeRow]);
 renderLabels();
 renderRows();
