@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>潮汕话语音输入</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0a;--card:#1c1c1e;--card2:#2c2c2e;
+  --primary:#0a84ff;--green:#30d158;--orange:#ff9f0a;--red:#ff453a;--yellow:#ffd60a;
+  --text:#f5f5f7;--text2:#98989f;--text3:#636366;
+  --border:#38383a;
+}
+html,body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",sans-serif;
+  background:var(--bg);color:var(--text);
+  height:100%;overflow:hidden;
+  position:fixed;width:100%;
+  touch-action:none;
+}
+#app{display:flex;flex-direction:column;height:100%;}
+
+.header{
+  padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:0.5px solid var(--border);flex-shrink:0;z-index:10;
+}
+.header h1{font-size:17px;font-weight:600;letter-spacing:-0.2px;}
+.hdr-btns{display:flex;gap:4px;}
+.hdr-btn{
+  background:none;border:none;color:var(--primary);font-size:14px;
+  padding:6px 10px;cursor:pointer;font-weight:500;border-radius:8px;
+}
+.hdr-btn:active{background:rgba(10,132,255,0.15);}
+.hdr-btn.danger{color:var(--red);}
+
+/* Language selector */
+.lang-bar{
+  padding:8px 16px;flex-shrink:0;
+  border-bottom:0.5px solid var(--border);background:var(--bg);
+  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.lang-bar::-webkit-scrollbar{display:none;}
+.lang-chip{
+  flex-shrink:0;padding:6px 14px;border-radius:16px;font-size:13px;font-weight:500;
+  border:1.5px solid var(--border);color:var(--text2);background:var(--card);
+  cursor:pointer;transition:all 0.2s;
+}
+.lang-chip.active{
+  border-color:var(--primary);color:var(--primary);background:rgba(10,132,255,0.1);
+}
+
+/* Text area */
+.text-area{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px;touch-action:pan-y;
+}
+#output{
+  width:100%;min-height:100%;background:transparent;border:none;
+  color:var(--text);font-size:18px;line-height:1.7;
+  resize:none;outline:none;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+}
+#output::placeholder{color:var(--text3);}
+
+/* Status bar */
+.status-bar{
+  padding:6px 16px;flex-shrink:0;
+  border-top:0.5px solid var(--border);
+  background:var(--card);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.status-text{font-size:12px;color:var(--text3);font-weight:500;}
+.status-text.listening{color:var(--green);}
+.char-count{font-size:12px;color:var(--text3);}
+
+/* Phrase bar */
+.phrase-bar{
+  padding:8px 12px;flex-shrink:0;
+  border-top:0.5px solid var(--border);
+  background:var(--bg);
+  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.phrase-bar::-webkit-scrollbar{display:none;}
+.phrase-chip{
+  flex-shrink:0;padding:6px 12px;border-radius:14px;font-size:13px;
+  border:1px solid var(--border);color:var(--text);background:var(--card);
+  cursor:pointer;white-space:nowrap;
+}
+.phrase-chip:active{background:var(--card2);}
+.phrase-chip .pinyin{font-size:10px;color:var(--text3);display:block;margin-top:1px;}
+
+/* Controls */
+.controls{
+  padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom));
+  flex-shrink:0;
+  background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:20px;
+}
+.ctrl-btn{
+  width:48px;height:48px;border-radius:50%;border:none;
+  background:var(--card2);color:var(--text2);
+  font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.ctrl-btn:active{transform:scale(0.92);}
+.ctrl-btn svg{width:22px;height:22px;fill:currentColor;}
+
+.mic-btn{
+  width:72px;height:72px;border-radius:50%;border:none;
+  background:var(--primary);color:#fff;
+  font-size:28px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;position:relative;
+}
+.mic-btn:active{transform:scale(0.92);}
+.mic-btn.recording{
+  background:var(--red);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+.mic-btn svg{width:32px;height:32px;fill:currentColor;}
+
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,69,58,0.4);}
+  50%{box-shadow:0 0 0 16px rgba(255,69,58,0);}
+}
+
+/* Peng'im input */
+.pengim-section{
+  padding:8px 16px;flex-shrink:0;
+  border-top:0.5px solid var(--border);
+  background:var(--card);
+}
+.pengim-input-row{display:flex;gap:8px;align-items:center;}
+.pengim-input{
+  flex:1;background:var(--card2);border:1px solid var(--border);
+  border-radius:10px;padding:8px 12px;
+  color:var(--text);font-size:15px;outline:none;
+}
+.pengim-input::placeholder{color:var(--text3);}
+.pengim-input:focus{border-color:var(--primary);}
+.pengim-send{
+  padding:8px 14px;border-radius:10px;border:none;
+  background:var(--primary);color:#fff;font-size:14px;font-weight:600;
+  cursor:pointer;
+}
+.pengim-candidates{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;min-height:0;
+}
+.pengim-cand{
+  padding:4px 10px;border-radius:8px;font-size:14px;
+  background:var(--card2);color:var(--text);border:1px solid var(--border);
+  cursor:pointer;
+}
+.pengim-cand:active{background:var(--primary);border-color:var(--primary);}
+.pengim-cand .cand-py{font-size:10px;color:var(--text3);margin-left:4px;}
+
+/* Toast */
+.toast{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  background:var(--card2);color:var(--text);
+  padding:8px 20px;border-radius:20px;font-size:13px;font-weight:500;
+  opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100;
+  border:1px solid var(--border);
+}
+.toast.show{opacity:1;}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  display:none;align-items:center;justify-content:center;z-index:50;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.show{display:flex;}
+.modal{
+  background:var(--card);border-radius:16px;padding:20px;
+  width:90%;max-width:360px;max-height:80vh;overflow-y:auto;
+}
+.modal h2{font-size:17px;font-weight:600;margin-bottom:12px;}
+.modal p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+.modal .dict-item{
+  padding:10px 0;border-bottom:0.5px solid var(--border);
+}
+.modal .dict-char{font-size:20px;font-weight:600;}
+.modal .dict-py{font-size:13px;color:var(--primary);margin-left:8px;}
+.modal .dict-mean{font-size:12px;color:var(--text2);margin-top:2px;}
+.modal-close{
+  width:100%;padding:10px;border-radius:10px;border:none;
+  background:var(--card2);color:var(--text);font-size:15px;font-weight:500;
+  cursor:pointer;margin-top:12px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <h1>潮汕话语音输入</h1>
+    <div class="hdr-btns">
+      <button class="hdr-btn" onclick="showDict()">词典</button>
+      <button class="hdr-btn" onclick="copyText()">复制</button>
+      <button class="hdr-btn danger" onclick="clearText()">清空</button>
+    </div>
+  </div>
+
+  <div class="lang-bar">
+    <div class="lang-chip active" data-lang="zh-CN" onclick="setLang(this)">普通话</div>
+    <div class="lang-chip" data-lang="zh-TW" onclick="setLang(this)">台湾国语</div>
+    <div class="lang-chip" data-lang="nan-TW" onclick="setLang(this)">闽南语</div>
+    <div class="lang-chip" data-lang="yue-Hant-HK" onclick="setLang(this)">粤语</div>
+    <div class="lang-chip" data-lang="zh-HK" onclick="setLang(this)">香港国语</div>
+  </div>
+
+  <div class="text-area">
+    <textarea id="output" placeholder="点击麦克风按钮开始语音输入，或使用下方拼音输入潮汕话..."></textarea>
+  </div>
+
+  <div class="status-bar">
+    <span class="status-text" id="status">准备就绪</span>
+    <span class="char-count" id="charCount">0 字</span>
+  </div>
+
+  <div class="phrase-bar" id="phraseBar"></div>
+
+  <div class="pengim-section">
+    <div class="pengim-input-row">
+      <input class="pengim-input" id="pengimInput" placeholder="潮汕话拼音 (如: gao, dia, ho)"
+             oninput="onPengimInput()" onkeydown="if(event.key==='Enter')insertTopCandidate()">
+      <button class="pengim-send" onclick="insertTopCandidate()">选字</button>
+    </div>
+    <div class="pengim-candidates" id="pengimCandidates"></div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="undoText()" title="撤销">
+      <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+    </button>
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">
+      <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>
+    </button>
+    <button class="ctrl-btn" onclick="addPunctuation()" title="标点">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="dictModal">
+  <div class="modal">
+    <h2>潮汕话常用词典</h2>
+    <p>常用潮汕话词汇及拼音 (Peng'im)</p>
+    <div id="dictContent"></div>
+    <button class="modal-close" onclick="hideDict()">关闭</button>
+  </div>
+</div>
+
+<script>
+// ===== Teochew Dictionary =====
+const TEOCHEW_DICT = [
+  // Greetings & Common
+  {chars:"汝好",py:"leu2 ho2",cat:"问候",mean:"你好"},
+  {chars:"食饭",py:"ziah8 bung7",cat:"日常",mean:"吃饭"},
+  {chars:"食茶",py:"ziah8 dê5",cat:"日常",mean:"喝茶"},
+  {chars:"多谢",py:"do1 sia7",cat:"问候",mean:"谢谢"},
+  {chars:"歹势",py:"pai2 se3",cat:"问候",mean:"不好意思/对不起"},
+  {chars:"无要紧",py:"bo5 io3 gin2",cat:"问候",mean:"没关系"},
+  {chars:"再会",py:"zai3 hue7",cat:"问候",mean:"再见"},
+  // People
+  {chars:"阿兄",py:"a1 hian1",cat:"人物",mean:"哥哥"},
+  {chars:"阿姐",py:"a1 zê2",cat:"人物",mean:"姐姐"},
+  {chars:"阿弟",py:"a1 di6",cat:"人物",mean:"弟弟"},
+  {chars:"阿妹",py:"a1 muê7",cat:"人物",mean:"妹妹"},
+  {chars:"阿爸",py:"a1 bê6",cat:"人物",mean:"爸爸"},
+  {chars:"阿母",py:"a1 ai2",cat:"人物",mean:"妈妈"},
+  {chars:"阿公",py:"a1 gong1",cat:"人物",mean:"爷爷"},
+  {chars:"阿嬷",py:"a1 ma2",cat:"人物",mean:"奶奶"},
+  {chars:"老公",py:"lao6 gang1",cat:"人物",mean:"丈夫"},
+  {chars:"某",py:"bou2",cat:"人物",mean:"妻子"},
+  {chars:"仔",py:"gian2",cat:"人物",mean:"儿子"},
+  {chars:"走仔",py:"zao2 gian2",cat:"人物",mean:"女儿"},
+  // Food
+  {chars:"粿条",py:"guê2 diao5",cat:"食物",mean:"河粉/粿条"},
+  {chars:"薄壳",py:"boh8 kag4",cat:"食物",mean:"海瓜子"},
+  {chars:"蚝烙",py:"o5 luah8",cat:"食物",mean:"蚝烙/牡蛎煎"},
+  {chars:"牛肉丸",py:"ghu5 nêg8 in5",cat:"食物",mean:"牛肉丸"},
+  {chars:"肠粉",py:"deng5 hung2",cat:"食物",mean:"肠粉"},
+  {chars:"鱼饭",py:"heu5 bung7",cat:"食物",mean:"鱼饭"},
+  {chars:"卤鹅",py:"lou7 go5",cat:"食物",mean:"卤鹅"},
+  {chars:"功夫茶",py:"gong1 hu1 dê5",cat:"食物",mean:"功夫茶"},
+  {chars:"橄榄",py:"gan1 na2",cat:"食物",mean:"橄榄"},
+  {chars:"甘草",py:"gam1 co2",cat:"食物",mean:"甘草"},
+  // Numbers
+  {chars:"一",py:"ig4/zêg8",cat:"数字",mean:"一"},
+  {chars:"二",py:"no6",cat:"数字",mean:"二"},
+  {chars:"三",py:"san1",cat:"数字",mean:"三"},
+  {chars:"四",py:"si3",cat:"数字",mean:"四"},
+  {chars:"五",py:"ngou6",cat:"数字",mean:"五"},
+  {chars:"六",py:"lag8",cat:"数字",mean:"六"},
+  {chars:"七",py:"cig4",cat:"数字",mean:"七"},
+  {chars:"八",py:"boih4",cat:"数字",mean:"八"},
+  {chars:"九",py:"gao2",cat:"数字",mean:"九"},
+  {chars:"十",py:"zab8",cat:"数字",mean:"十"},
+  // Common words
+  {chars:"好",py:"ho2",cat:"常用",mean:"好"},
+  {chars:"𫢗",py:"mo2",cat:"常用",mean:"没有 (无)"},
+  {chars:"有",py:"u6",cat:"常用",mean:"有"},
+  {chars:"是",py:"si6",cat:"常用",mean:"是"},
+  {chars:"勿",py:"mai3",cat:"常用",mean:"不要"},
+  {chars:"爱",py:"ai3",cat:"常用",mean:"要/想要"},
+  {chars:"来",py:"lai5",cat:"常用",mean:"来"},
+  {chars:"去",py:"keu3",cat:"常用",mean:"去"},
+  {chars:"知",py:"zai1",cat:"常用",mean:"知道"},
+  {chars:"雅",py:"ngia2",cat:"常用",mean:"漂亮/好看"},
+  {chars:"猛",py:"mê2",cat:"常用",mean:"快"},
+  {chars:"慢",py:"mang7",cat:"常用",mean:"慢"},
+  {chars:"大",py:"dua7",cat:"常用",mean:"大"},
+  {chars:"细",py:"soi3",cat:"常用",mean:"小"},
+  {chars:"寒",py:"guan5",cat:"常用",mean:"冷"},
+  {chars:"热",py:"ruah8",cat:"常用",mean:"热"},
+  // Phrases
+  {chars:"食未",py:"ziah8 buê7",cat:"短语",mean:"吃了没？(问候)"},
+  {chars:"好食",py:"ho2 ziah8",cat:"短语",mean:"好吃"},
+  {chars:"去底块",py:"keu3 di7 go3",cat:"短语",mean:"去哪里"},
+  {chars:"做呢个",py:"zo3 ni5 gai5",cat:"短语",mean:"做什么"},
+  {chars:"几钱",py:"gui2 zin5",cat:"短语",mean:"多少钱"},
+  {chars:"𫢗闲",py:"mo2 êng5",cat:"短语",mean:"没空"},
+  {chars:"有闲",py:"u6 êng5",cat:"短语",mean:"有空"},
+  {chars:"紧来",py:"gin2 lai5",cat:"短语",mean:"快来"},
+  {chars:"慢慢来",py:"mang7 mang7 lai5",cat:"短语",mean:"慢慢来"},
+  {chars:"真正",py:"zing1 zian3",cat:"短语",mean:"真的"},
+];
+
+// ===== Peng'im lookup table =====
+const PENGIM_MAP = {};
+TEOCHEW_DICT.forEach(item => {
+  const syllables = item.py.toLowerCase().replace(/[0-9]/g,'').split(/[\s\/]+/);
+  syllables.forEach(s => {
+    s = s.trim();
+    if(!s) return;
+    if(!PENGIM_MAP[s]) PENGIM_MAP[s] = [];
+    if(!PENGIM_MAP[s].find(x => x.chars === item.chars)) {
+      PENGIM_MAP[s].push(item);
+    }
+  });
+});
+
+// ===== State =====
+let currentLang = 'zh-CN';
+let isRecording = false;
+let recognition = null;
+let undoStack = [];
+
+// ===== Speech Recognition =====
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang = currentLang;
+  r.continuous = true;
+  r.interimResults = true;
+  r.maxAlternatives = 1;
+
+  r.onresult = (e) => {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        final += t;
+      } else {
+        interim += t;
+      }
+    }
+    if (final) {
+      saveUndo();
+      const ta = document.getElementById('output');
+      const pos = ta.selectionStart;
+      const val = ta.value;
+      ta.value = val.slice(0, pos) + final + val.slice(pos);
+      ta.selectionStart = ta.selectionEnd = pos + final.length;
+      updateCharCount();
+    }
+    updateStatus(interim ? '听到: ' + interim : '聆听中...');
+  };
+
+  r.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      showToast('请允许麦克风权限');
+    } else if (e.error === 'no-speech') {
+      updateStatus('未检测到语音，请再试');
+    } else {
+      showToast('语音识别错误: ' + e.error);
+    }
+    stopRecording();
+  };
+
+  r.onend = () => {
+    if (isRecording) {
+      // Auto restart if still in recording mode
+      try { r.start(); } catch(e) {}
+    }
+  };
+
+  return r;
+}
+
+function toggleMic() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  recognition = initRecognition();
+  if (!recognition) {
+    showToast('此浏览器不支持语音识别，请使用 Chrome');
+    return;
+  }
+  try {
+    recognition.start();
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+    updateStatus('聆听中...');
+    document.getElementById('status').classList.add('listening');
+  } catch(e) {
+    showToast('启动语音识别失败');
+  }
+}
+
+function stopRecording() {
+  isRecording = false;
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+    recognition = null;
+  }
+  document.getElementById('micBtn').classList.remove('recording');
+  updateStatus('准备就绪');
+  document.getElementById('status').classList.remove('listening');
+}
+
+// ===== Language =====
+function setLang(el) {
+  document.querySelectorAll('.lang-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentLang = el.dataset.lang;
+  if (isRecording) {
+    stopRecording();
+    startRecording();
+  }
+  showToast('已切换: ' + el.textContent);
+}
+
+// ===== Peng'im Input =====
+function onPengimInput() {
+  const input = document.getElementById('pengimInput').value.trim().toLowerCase();
+  const container = document.getElementById('pengimCandidates');
+  container.innerHTML = '';
+  if (!input) return;
+
+  const matches = [];
+  // Exact match
+  if (PENGIM_MAP[input]) {
+    PENGIM_MAP[input].forEach(m => matches.push(m));
+  }
+  // Prefix match
+  Object.keys(PENGIM_MAP).forEach(k => {
+    if (k.startsWith(input) && k !== input) {
+      PENGIM_MAP[k].forEach(m => {
+        if (!matches.find(x => x.chars === m.chars)) matches.push(m);
+      });
+    }
+  });
+
+  matches.slice(0, 12).forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'pengim-cand';
+    d.innerHTML = m.chars + '<span class="cand-py">' + m.py + '</span>';
+    d.onclick = () => insertText(m.chars);
+    container.appendChild(d);
+  });
+}
+
+function insertTopCandidate() {
+  const container = document.getElementById('pengimCandidates');
+  const first = container.querySelector('.pengim-cand');
+  if (first) first.click();
+  document.getElementById('pengimInput').value = '';
+  document.getElementById('pengimCandidates').innerHTML = '';
+}
+
+function insertText(text) {
+  saveUndo();
+  const ta = document.getElementById('output');
+  const pos = ta.selectionStart;
+  const val = ta.value;
+  ta.value = val.slice(0, pos) + text + val.slice(pos);
+  ta.selectionStart = ta.selectionEnd = pos + text.length;
+  ta.focus();
+  updateCharCount();
+  document.getElementById('pengimInput').value = '';
+  document.getElementById('pengimCandidates').innerHTML = '';
+}
+
+// ===== Phrase Bar =====
+function initPhraseBar() {
+  const bar = document.getElementById('phraseBar');
+  const phrases = TEOCHEW_DICT.filter(d => d.cat === '短语' || d.cat === '问候');
+  phrases.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'phrase-chip';
+    chip.innerHTML = p.chars + '<span class="pinyin">' + p.py + '</span>';
+    chip.onclick = () => insertText(p.chars);
+    bar.appendChild(chip);
+  });
+}
+
+// ===== Dictionary =====
+function showDict() {
+  const content = document.getElementById('dictContent');
+  content.innerHTML = '';
+  const cats = [...new Set(TEOCHEW_DICT.map(d => d.cat))];
+  cats.forEach(cat => {
+    const h = document.createElement('div');
+    h.style.cssText = 'font-size:14px;font-weight:600;color:var(--primary);margin:12px 0 6px;';
+    h.textContent = cat;
+    content.appendChild(h);
+    TEOCHEW_DICT.filter(d => d.cat === cat).forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'dict-item';
+      item.innerHTML = '<span class="dict-char">' + d.chars + '</span><span class="dict-py">' + d.py + '</span><div class="dict-mean">' + d.mean + '</div>';
+      item.style.cursor = 'pointer';
+      item.onclick = () => { insertText(d.chars); hideDict(); };
+      content.appendChild(item);
+    });
+  });
+  document.getElementById('dictModal').classList.add('show');
+}
+
+function hideDict() {
+  document.getElementById('dictModal').classList.remove('show');
+}
+
+// ===== Utils =====
+function copyText() {
+  const text = document.getElementById('output').value;
+  if (!text) { showToast('没有内容可复制'); return; }
+  navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板'));
+}
+
+function clearText() {
+  const ta = document.getElementById('output');
+  if (!ta.value) return;
+  saveUndo();
+  ta.value = '';
+  updateCharCount();
+  showToast('已清空');
+}
+
+function undoText() {
+  if (undoStack.length === 0) { showToast('无法撤销'); return; }
+  document.getElementById('output').value = undoStack.pop();
+  updateCharCount();
+}
+
+function saveUndo() {
+  const val = document.getElementById('output').value;
+  undoStack.push(val);
+  if (undoStack.length > 30) undoStack.shift();
+}
+
+function addPunctuation() {
+  const puncts = ['，','。','！','？','、','；','：','"','"','（','）','……','——'];
+  const existing = document.querySelector('.punct-popup');
+  if (existing) { existing.remove(); return; }
+
+  const popup = document.createElement('div');
+  popup.className = 'punct-popup';
+  popup.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:300px;z-index:30;';
+  puncts.forEach(p => {
+    const btn = document.createElement('button');
+    btn.textContent = p;
+    btn.style.cssText = 'width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:16px;cursor:pointer;';
+    btn.onclick = () => { insertText(p); popup.remove(); };
+    popup.appendChild(btn);
+  });
+  document.body.appendChild(popup);
+  setTimeout(() => {
+    const handler = (e) => {
+      if (!popup.contains(e.target)) { popup.remove(); document.removeEventListener('click', handler); }
+    };
+    document.addEventListener('click', handler);
+  }, 100);
+}
+
+function updateStatus(text) {
+  document.getElementById('status').textContent = text;
+}
+
+function updateCharCount() {
+  const len = document.getElementById('output').value.length;
+  document.getElementById('charCount').textContent = len + ' 字';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== Init =====
+document.getElementById('output').addEventListener('input', updateCharCount);
+initPhraseBar();
+
+// Close dict on overlay click
+document.getElementById('dictModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('dictModal')) hideDict();
+});
+</script>
+</body>
+</html>
