@@ -11,10 +11,30 @@ html {
 
 body {
     font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: #1a0a00;
-    color: #f5e6d0;
+    background: linear-gradient(180deg, #8b1a1a 0%, #a02020 30%, #c41e1e 60%, #8b1a1a 100%);
+    background-attachment: fixed;
+    color: #fff5e0;
     min-height: 100vh;
     overflow-x: hidden;
+}
+
+/* 背景装饰纹理 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 215, 0, 0.06) 0%, transparent 50%),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 40px,
+            rgba(255, 215, 0, 0.03) 40px,
+            rgba(255, 215, 0, 0.03) 41px
+        );
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* ========== 页面切换 ========== */
@@ -22,6 +42,8 @@ body {
     display: none;
     min-height: 100vh;
     animation: fadeIn 0.4s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .page.active {
@@ -39,20 +61,38 @@ body {
     padding: 30px 20px 40px;
 }
 
+/* ========== 装饰顶栏 ========== */
+.top-banner {
+    text-align: center;
+    padding: 20px 0 10px;
+    position: relative;
+}
+
+.top-banner::after {
+    content: '🏮 🏮 🏮';
+    display: block;
+    font-size: 1.6rem;
+    letter-spacing: 16px;
+    margin-top: 8px;
+    opacity: 0.8;
+}
+
 /* ========== 首页 - 庙宇选择 ========== */
 .main-title {
     text-align: center;
     font-size: 2.4rem;
     color: #ffd700;
     margin-bottom: 8px;
-    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2);
+    letter-spacing: 6px;
 }
 
 .subtitle {
     text-align: center;
     font-size: 1.1rem;
-    color: #c9a96e;
+    color: #ffe4b5;
     margin-bottom: 30px;
+    opacity: 0.85;
 }
 
 .temple-list {
@@ -62,8 +102,8 @@ body {
 }
 
 .temple-card {
-    background: linear-gradient(135deg, #2a1508 0%, #3d1f0a 100%);
-    border: 2px solid #8b6914;
+    background: linear-gradient(135deg, rgba(139, 26, 26, 0.6) 0%, rgba(120, 20, 20, 0.8) 100%);
+    border: 2px solid #ffd700;
     border-radius: 16px;
     padding: 20px;
     display: flex;
@@ -72,24 +112,28 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 215, 0, 0.1);
+    backdrop-filter: blur(4px);
 }
 
 .temple-card:active {
     transform: scale(0.97);
-    border-color: #ffd700;
-    background: linear-gradient(135deg, #3d1f0a 0%, #4a2810 100%);
+    border-color: #fff;
+    background: linear-gradient(135deg, rgba(160, 30, 30, 0.8) 0%, rgba(140, 25, 25, 0.9) 100%);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
 }
 
 .temple-card-icon {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ffd700, #b8860b);
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2.2rem;
     flex-shrink: 0;
+    box-shadow: 0 3px 12px rgba(255, 140, 0, 0.4);
 }
 
 .temple-card-info {
@@ -105,13 +149,23 @@ body {
 
 .temple-card-region {
     font-size: 1rem;
-    color: #c9a96e;
+    color: #ffe4b5;
 }
 
 .temple-card-desc {
     font-size: 0.85rem;
-    color: #9a8565;
+    color: #f0c8a0;
     margin-top: 4px;
+}
+
+/* ========== 分割线装饰 ========== */
+.divider {
+    text-align: center;
+    margin: 24px 0;
+    color: #ffd700;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    letter-spacing: 8px;
 }
 
 /* ========== 祈愿页 ========== */
@@ -124,21 +178,23 @@ body {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    border: 3px solid #ffd700;
+    border: 4px solid #ffd700;
     object-fit: cover;
     margin-bottom: 12px;
-    background: #2a1508;
+    background: rgba(139, 26, 26, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-left: auto;
     margin-right: auto;
     font-size: 4rem;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.1);
 }
 
 .temple-name {
     font-size: 1.6rem;
     color: #ffd700;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .pray-section {
@@ -148,7 +204,7 @@ body {
 .pray-label {
     display: block;
     font-size: 1.2rem;
-    color: #c9a96e;
+    color: #ffe4b5;
     margin-bottom: 12px;
     text-align: center;
 }
@@ -158,21 +214,22 @@ body {
     padding: 16px;
     font-size: 1.2rem;
     line-height: 1.8;
-    border: 2px solid #8b6914;
+    border: 2px solid #ffd700;
     border-radius: 12px;
-    background: #2a1508;
-    color: #f5e6d0;
+    background: rgba(120, 20, 20, 0.5);
+    color: #fff5e0;
     resize: none;
     outline: none;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .pray-input:focus {
-    border-color: #ffd700;
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .pray-input::placeholder {
-    color: #6b5a3e;
+    color: #d4a080;
 }
 
 /* ========== 按钮 ========== */
@@ -182,19 +239,27 @@ body {
     padding: 18px;
     font-size: 1.3rem;
     font-weight: bold;
-    color: #1a0a00;
-    background: linear-gradient(135deg, #ffd700, #f0c040);
+    color: #8b0000;
+    background: linear-gradient(135deg, #ffd700, #ffb800);
     border: none;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 12px;
     -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 15px rgba(255, 184, 0, 0.4);
+    letter-spacing: 2px;
 }
 
 .btn-primary:active {
     transform: scale(0.97);
-    background: linear-gradient(135deg, #f0c040, #daa520);
+    background: linear-gradient(135deg, #ffb800, #ff9500);
+    box-shadow: 0 2px 10px rgba(255, 184, 0, 0.6);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -202,9 +267,9 @@ body {
     width: 100%;
     padding: 16px;
     font-size: 1.1rem;
-    color: #c9a96e;
-    background: transparent;
-    border: 2px solid #5a4320;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid rgba(255, 215, 0, 0.5);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s;
@@ -213,8 +278,8 @@ body {
 }
 
 .btn-secondary:active {
-    border-color: #8b6914;
-    background: rgba(139, 105, 20, 0.1);
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.2);
 }
 
 /* ========== 掷杯页 ========== */
@@ -223,28 +288,31 @@ body {
     font-size: 1.8rem;
     color: #ffd700;
     margin-bottom: 12px;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .hint-text {
     text-align: center;
     font-size: 1.1rem;
-    color: #c9a96e;
+    color: #ffe4b5;
     margin-bottom: 30px;
+    opacity: 0.85;
 }
 
 .blocks-area {
     display: flex;
     justify-content: center;
-    gap: 40px;
+    gap: 50px;
     margin-bottom: 30px;
-    min-height: 160px;
+    min-height: 180px;
     align-items: center;
 }
 
+/* ========== 新版筊杯 - 红色半月形 ========== */
 .block {
-    width: 100px;
-    height: 140px;
-    perspective: 300px;
+    width: 80px;
+    height: 160px;
+    perspective: 400px;
     cursor: pointer;
 }
 
@@ -256,39 +324,73 @@ body {
     transition: transform 0.6s;
 }
 
-.block-flat, .block-round {
+.block-face {
     position: absolute;
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
-    font-weight: bold;
 }
 
+/* 平面（阴面）- 红色平面朝上 */
 .block-flat {
-    background: linear-gradient(180deg, #e8d5a3, #c9a96e);
-    color: #4a2810;
-    border: 3px solid #8b6914;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 
+.block-flat .jiaobei-svg {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* 凸面（阳面）- 木色凸面朝上 */
 .block-round {
-    background: linear-gradient(180deg, #8b6914, #6b4f10);
-    color: #e8d5a3;
-    border: 3px solid #c9a96e;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
     transform: rotateX(180deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.block-round .jiaobei-svg {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.block-label {
+    font-size: 0.9rem;
+    margin-top: 6px;
+    font-weight: bold;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.block-flat .block-label {
+    color: #ffd700;
+}
+
+.block-round .block-label {
+    color: #ffe4b5;
 }
 
 /* 掷杯动画 */
 @keyframes throwBlock {
-    0% { transform: rotateX(0deg); }
-    25% { transform: rotateX(360deg) rotateY(180deg); }
-    50% { transform: rotateX(720deg) rotateY(360deg); }
-    75% { transform: rotateX(1080deg) rotateY(180deg); }
-    100% { transform: rotateX(var(--final-x)) rotateY(0deg); }
+    0% { transform: rotateX(0deg) translateY(0); }
+    15% { transform: rotateX(180deg) translateY(-40px); }
+    30% { transform: rotateX(360deg) translateY(-20px) rotateY(90deg); }
+    50% { transform: rotateX(720deg) translateY(-60px) rotateY(180deg); }
+    70% { transform: rotateX(1080deg) translateY(-30px) rotateY(90deg); }
+    85% { transform: rotateX(1260deg) translateY(-10px) rotateY(0deg); }
+    100% { transform: rotateX(var(--final-x)) translateY(0) rotateY(0deg); }
 }
 
 .block-inner.throwing {
@@ -313,21 +415,22 @@ body {
 }
 
 .block-result.sheng-bei {
-    background: rgba(255, 215, 0, 0.15);
+    background: rgba(255, 215, 0, 0.2);
     color: #ffd700;
     border: 2px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
 }
 
 .block-result.xiao-bei {
-    background: rgba(200, 200, 200, 0.1);
-    color: #c0c0c0;
-    border: 2px solid #666;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffe4b5;
+    border: 2px solid rgba(255, 228, 181, 0.5);
 }
 
 .block-result.nu-bei {
-    background: rgba(200, 80, 80, 0.1);
-    color: #e07070;
-    border: 2px solid #a04040;
+    background: rgba(80, 0, 0, 0.3);
+    color: #ff8080;
+    border: 2px solid rgba(255, 100, 100, 0.5);
 }
 
 .btn-throw {
@@ -337,65 +440,89 @@ body {
 
 /* ========== 签文结果页 ========== */
 .result-card {
-    background: linear-gradient(135deg, #2a1508 0%, #3d1f0a 100%);
-    border: 2px solid #8b6914;
+    background: linear-gradient(135deg, rgba(139, 26, 26, 0.5) 0%, rgba(100, 15, 15, 0.7) 100%);
+    border: 3px solid #ffd700;
     border-radius: 16px;
     padding: 28px 24px;
     margin-bottom: 24px;
     text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 215, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 签文卡片顶部装饰 */
+.result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #ffd700, transparent);
 }
 
 .result-rank {
     display: inline-block;
-    padding: 6px 24px;
+    padding: 8px 28px;
     border-radius: 20px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: bold;
     margin-bottom: 16px;
 }
 
 .result-rank.ji {
-    background: rgba(255, 215, 0, 0.2);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 140, 0, 0.3));
     color: #ffd700;
-    border: 1px solid #ffd700;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
 }
 
 .result-rank.zhong-ji {
-    background: rgba(200, 180, 100, 0.15);
-    color: #c9a96e;
-    border: 1px solid #c9a96e;
+    background: rgba(255, 200, 100, 0.2);
+    color: #ffc864;
+    border: 2px solid #ffc864;
 }
 
 .result-rank.xiao-ji {
-    background: rgba(160, 160, 160, 0.15);
-    color: #b0b0b0;
-    border: 1px solid #888;
+    background: rgba(200, 200, 200, 0.15);
+    color: #d0d0d0;
+    border: 2px solid rgba(200, 200, 200, 0.5);
 }
 
 .result-rank.xiong {
-    background: rgba(200, 80, 80, 0.15);
-    color: #e07070;
-    border: 1px solid #a04040;
+    background: rgba(100, 0, 0, 0.3);
+    color: #ff8080;
+    border: 2px solid rgba(255, 100, 100, 0.5);
 }
 
 .result-title {
     font-size: 1.5rem;
     color: #ffd700;
     margin-bottom: 20px;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .result-poem {
     font-size: 1.2rem;
     line-height: 2.2;
-    color: #e8d5a3;
+    color: #ffe4b5;
     margin-bottom: 20px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #5a4320;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .result-explain {
     font-size: 1.1rem;
     line-height: 1.9;
-    color: #c9a96e;
+    color: #f0c8a0;
     text-align: left;
+}
+
+/* ========== 底部装饰 ========== */
+.footer-deco {
+    text-align: center;
+    padding: 20px 0 10px;
+    color: #ffd700;
+    font-size: 0.8rem;
+    opacity: 0.4;
+    letter-spacing: 4px;
 }

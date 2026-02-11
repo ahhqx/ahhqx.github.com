@@ -10,11 +10,14 @@
     <!-- 页面1: 选择庙宇主题 -->
     <div id="page-temple" class="page active">
         <div class="page-inner">
-            <h1 class="main-title">民俗祈福</h1>
+            <div class="top-banner">
+                <h1 class="main-title">民俗祈福</h1>
+            </div>
             <p class="subtitle">选择您所在地区的庙宇</p>
             <div id="temple-list" class="temple-list">
                 <!-- JS动态生成 -->
             </div>
+            <div class="footer-deco">— 诚心祈愿 有求必应 —</div>
         </div>
     </div>
 
@@ -25,6 +28,7 @@
                 <img id="deity-img" class="deity-img" src="" alt="神像">
                 <h2 id="temple-name" class="temple-name"></h2>
             </div>
+            <div class="divider">✦ ✦ ✦</div>
             <div class="pray-section">
                 <label class="pray-label" for="pray-input">请输入您的祈愿</label>
                 <textarea id="pray-input" class="pray-input" rows="4" placeholder="例如：求家人身体健康、出入平安..."></textarea>
@@ -38,18 +42,83 @@
     <div id="page-divination" class="page">
         <div class="page-inner">
             <h2 class="section-title">掷杯问卦</h2>
-            <p class="hint-text" id="shake-hint">点击下方杯筊开始掷杯</p>
+            <p class="hint-text" id="shake-hint">点击下方按钮开始掷杯</p>
             <div id="blocks-area" class="blocks-area">
+                <!-- 左筊杯 - 红色半月形 -->
                 <div class="block block-left" id="block-left">
                     <div class="block-inner">
-                        <div class="block-flat">平</div>
-                        <div class="block-round">凸</div>
+                        <div class="block-flat">
+                            <svg class="jiaobei-svg" width="70" height="130" viewBox="0 0 70 130">
+                                <!-- 平面（阴面）：红色平滑面 -->
+                                <path d="M35 5 C55 5, 68 30, 68 65 C68 100, 55 125, 35 125 C25 125, 15 100, 15 65 C15 30, 25 5, 35 5 Z"
+                                      fill="url(#flatGrad)" stroke="#cc0000" stroke-width="2"/>
+                                <defs>
+                                    <linearGradient id="flatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#e83030"/>
+                                        <stop offset="50%" style="stop-color:#cc1111"/>
+                                        <stop offset="100%" style="stop-color:#990000"/>
+                                    </linearGradient>
+                                </defs>
+                                <text x="35" y="70" text-anchor="middle" fill="#ffd700" font-size="18" font-weight="bold">平</text>
+                            </svg>
+                            <span class="block-label">阴面</span>
+                        </div>
+                        <div class="block-round">
+                            <svg class="jiaobei-svg" width="70" height="130" viewBox="0 0 70 130">
+                                <!-- 凸面（阳面）：红色带凸起 -->
+                                <path d="M35 5 C55 5, 68 30, 68 65 C68 100, 55 125, 35 125 C25 125, 15 100, 15 65 C15 30, 25 5, 35 5 Z"
+                                      fill="url(#roundGrad)" stroke="#aa0000" stroke-width="2"/>
+                                <defs>
+                                    <linearGradient id="roundGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#cc2020"/>
+                                        <stop offset="40%" style="stop-color:#ff4040"/>
+                                        <stop offset="70%" style="stop-color:#cc2020"/>
+                                        <stop offset="100%" style="stop-color:#881010"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- 凸起效果 -->
+                                <ellipse cx="38" cy="60" rx="16" ry="35" fill="none" stroke="rgba(255,200,200,0.3)" stroke-width="1.5"/>
+                                <text x="35" y="70" text-anchor="middle" fill="#ffe0b0" font-size="18" font-weight="bold">凸</text>
+                            </svg>
+                            <span class="block-label">阳面</span>
+                        </div>
                     </div>
                 </div>
+                <!-- 右筊杯 -->
                 <div class="block block-right" id="block-right">
                     <div class="block-inner">
-                        <div class="block-flat">平</div>
-                        <div class="block-round">凸</div>
+                        <div class="block-flat">
+                            <svg class="jiaobei-svg" width="70" height="130" viewBox="0 0 70 130">
+                                <path d="M35 5 C55 5, 68 30, 68 65 C68 100, 55 125, 35 125 C25 125, 15 100, 15 65 C15 30, 25 5, 35 5 Z"
+                                      fill="url(#flatGrad2)" stroke="#cc0000" stroke-width="2"/>
+                                <defs>
+                                    <linearGradient id="flatGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#e83030"/>
+                                        <stop offset="50%" style="stop-color:#cc1111"/>
+                                        <stop offset="100%" style="stop-color:#990000"/>
+                                    </linearGradient>
+                                </defs>
+                                <text x="35" y="70" text-anchor="middle" fill="#ffd700" font-size="18" font-weight="bold">平</text>
+                            </svg>
+                            <span class="block-label">阴面</span>
+                        </div>
+                        <div class="block-round">
+                            <svg class="jiaobei-svg" width="70" height="130" viewBox="0 0 70 130">
+                                <path d="M35 5 C55 5, 68 30, 68 65 C68 100, 55 125, 35 125 C25 125, 15 100, 15 65 C15 30, 25 5, 35 5 Z"
+                                      fill="url(#roundGrad2)" stroke="#aa0000" stroke-width="2"/>
+                                <defs>
+                                    <linearGradient id="roundGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#cc2020"/>
+                                        <stop offset="40%" style="stop-color:#ff4040"/>
+                                        <stop offset="70%" style="stop-color:#cc2020"/>
+                                        <stop offset="100%" style="stop-color:#881010"/>
+                                    </linearGradient>
+                                </defs>
+                                <ellipse cx="38" cy="60" rx="16" ry="35" fill="none" stroke="rgba(255,200,200,0.3)" stroke-width="1.5"/>
+                                <text x="35" y="70" text-anchor="middle" fill="#ffe0b0" font-size="18" font-weight="bold">凸</text>
+                            </svg>
+                            <span class="block-label">阳面</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,6 +143,7 @@
             <button id="btn-read" class="btn-primary">语音播报</button>
             <button id="btn-again" class="btn-secondary">再求一签</button>
             <button id="btn-home" class="btn-secondary">返回首页</button>
+            <div class="footer-deco">— 心诚则灵 —</div>
         </div>
     </div>
 
