@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>食品成本计算器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0a;--card:#1c1c1e;--card2:#2c2c2e;
+  --primary:#0a84ff;--green:#30d158;--orange:#ff9f0a;--red:#ff453a;--yellow:#ffd60a;
+  --text:#f5f5f7;--text2:#98989f;--text3:#636366;
+  --border:#38383a;
+}
+html,body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",sans-serif;
+  background:var(--bg);color:var(--text);
+  height:100%;overflow:hidden;
+  position:fixed;width:100%;
+  touch-action:none;
+}
+#app{display:flex;flex-direction:column;height:100%;}
+
+.header{
+  padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:0.5px solid var(--border);flex-shrink:0;z-index:10;
+}
+.header h1{font-size:17px;font-weight:600;letter-spacing:-0.2px;}
+.hdr-btns{display:flex;gap:4px;}
+.hdr-btn{
+  background:none;border:none;color:var(--primary);font-size:14px;
+  padding:6px 10px;cursor:pointer;font-weight:500;border-radius:8px;
+}
+.hdr-btn:active{background:rgba(10,132,255,0.15);}
+.hdr-btn.danger{color:var(--red);}
+
+.total-section{
+  padding:14px 20px;flex-shrink:0;
+  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);
+  border-bottom:0.5px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.total-left .total-label{font-size:12px;color:var(--text2);font-weight:500;}
+.total-left .total-amount{font-size:32px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+.total-right{text-align:right;}
+.total-right .total-rows{font-size:12px;color:var(--text3);}
+
+/* Labels tray */
+.labels-tray{
+  padding:8px 16px;flex-shrink:0;
+  border-bottom:0.5px solid var(--border);background:var(--bg);
+}
+.labels-tray-hint{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:0.3px;margin-bottom:6px;}
+.labels-scroll{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;touch-action:pan-x;}
+.labels-scroll::-webkit-scrollbar{display:none;}
+.tag{
+  flex-shrink:0;padding:5px 12px;border-radius:16px;font-size:12px;font-weight:600;
+  -webkit-user-select:none;user-select:none;
+  border:1.5px solid var(--border);color:var(--text);background:var(--card);
+  transition:transform 0.15s,box-shadow 0.15s;position:relative;
+}
+.tag.dragging{opacity:0.4;transform:scale(0.95);}
+.tag.c0{border-color:#ff6b6b;color:#ff6b6b;background:rgba(255,107,107,0.1);}
+.tag.c1{border-color:#ffa94d;color:#ffa94d;background:rgba(255,169,77,0.1);}
+.tag.c2{border-color:#ffd43b;color:#ffd43b;background:rgba(255,212,59,0.1);}
+.tag.c3{border-color:#69db7c;color:#69db7c;background:rgba(105,219,124,0.1);}
+.tag.c4{border-color:#74c0fc;color:#74c0fc;background:rgba(116,192,252,0.1);}
+.tag.c5{border-color:#b197fc;color:#b197fc;background:rgba(177,151,252,0.1);}
+.tag.c6{border-color:#e599f7;color:#e599f7;background:rgba(229,153,247,0.1);}
+.tag.c7{border-color:#fcc2d7;color:#fcc2d7;background:rgba(252,194,215,0.1);}
+.tag.bracket{
+  border-color:var(--yellow);color:var(--yellow);background:rgba(255,214,10,0.08);
+  font-weight:700;font-size:14px;letter-spacing:1px;padding:5px 14px;
+}
+.tag-add{border-style:dashed;color:var(--text3);border-color:var(--text3);font-weight:500;}
+.tag-del{
+  position:absolute;top:-6px;right:-6px;width:16px;height:16px;
+  background:var(--red);color:#fff;border:none;border-radius:50%;
+  font-size:10px;line-height:16px;text-align:center;cursor:pointer;
+  display:none;
+}
+.tag.editing .tag-del{display:block;}
+
+/* Rows area */
+.rows-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px;touch-action:pan-y;}
+.row{
+  background:var(--card);border-radius:14px;margin-bottom:8px;
+  padding:10px 12px 8px;position:relative;
+  border:2px solid transparent;transition:border-color 0.2s;
+}
+.row.active{border-color:rgba(10,132,255,0.3);}
+
+.row-preview{
+  display:flex;align-items:flex-end;gap:2px;flex-wrap:wrap;
+  min-height:48px;margin-bottom:6px;
+}
+.token{display:inline-flex;flex-direction:column;align-items:center;position:relative;margin:1px;}
+.token-num{
+  background:var(--card2);border-radius:8px;padding:5px 8px;
+  font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;
+  min-width:32px;text-align:center;
+  border:2px solid transparent;transition:all 0.2s;position:relative;
+  cursor:pointer;
+}
+.token-num.active-token{border-color:var(--primary);background:rgba(10,132,255,0.1);}
+.token-num.drop-hover{
+  border-color:var(--green);background:rgba(48,209,88,0.15);
+  transform:scale(1.08);box-shadow:0 0 16px rgba(48,209,88,0.3);
+}
+.token-label{
+  font-size:9px;font-weight:600;letter-spacing:0.2px;
+  margin-top:2px;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  padding:1px 5px;border-radius:3px;cursor:pointer;
+}
+.token-label.empty{color:var(--text3);font-weight:400;font-size:9px;}
+.token-op{
+  background:var(--card2);border-radius:8px;padding:5px 8px;
+  font-size:18px;font-weight:700;color:var(--orange);
+  min-width:32px;text-align:center;align-self:center;
+}
+.token-paren{
+  background:rgba(255,214,10,0.08);border-radius:8px;padding:5px 6px;
+  font-size:18px;font-weight:700;color:var(--yellow);
+  min-width:28px;text-align:center;align-self:center;
+  text-shadow:0 0 8px rgba(255,214,10,0.3);
+  border:2px solid transparent;transition:all 0.2s;cursor:pointer;
+}
+.token-paren.paren-active{
+  border-color:var(--yellow);background:rgba(255,214,10,0.15);
+}
+.token-paren-hint{
+  font-size:8px;color:var(--text3);margin-top:2px;white-space:nowrap;
+}
+
+.row-expr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:6px;border-top:0.5px solid var(--border);
+}
+.row-expr-text{
+  font-size:12px;color:var(--text3);font-family:"SF Mono",Menlo,monospace;
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.row-subtotal{
+  font-size:14px;font-weight:700;color:var(--green);
+  font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:8px;
+}
+.row-del{
+  background:none;border:none;color:var(--text3);font-size:16px;
+  padding:2px 4px 2px 8px;cursor:pointer;flex-shrink:0;
+}
+.row-del:active{color:var(--red);}
+
+.add-row{
+  border:2px dashed var(--border);border-radius:14px;
+  background:none;color:var(--text3);font-size:13px;
+  padding:12px;width:100%;cursor:pointer;margin-bottom:8px;
+}
+.add-row:active{background:var(--card);}
+
+/* Numpad */
+.numpad{
+  flex-shrink:0;background:#1c1c1e;
+  padding:5px;padding-bottom:max(5px,env(safe-area-inset-bottom));
+  border-top:0.5px solid var(--border);
+}
+.np-row{display:flex;gap:5px;margin-bottom:5px;}
+.np-row:last-child{margin-bottom:0;}
+.nk{
+  flex:1;border:none;border-radius:8px;
+  padding:13px 0;font-size:20px;font-weight:400;
+  cursor:pointer;text-align:center;
+  -webkit-user-select:none;user-select:none;
+  color:var(--text);background:var(--card2);
+  transition:background 0.1s;
+  touch-action:manipulation;
+}
+.nk:active,.nk.pressed{background:#4a4a4e;}
+.nk.op{background:#4a4a4e;color:var(--orange);font-weight:700;}
+.nk.op:active,.nk.op.pressed{background:#5a5a5e;}
+.nk.paren{background:rgba(255,214,10,0.12);color:var(--yellow);font-weight:700;font-size:22px;}
+.nk.paren:active,.nk.paren.pressed{background:rgba(255,214,10,0.25);}
+.nk.fn{background:var(--card2);color:var(--text2);font-size:14px;font-weight:500;}
+.nk.fn:active,.nk.fn.pressed{background:#4a4a4e;}
+.nk.wide2{flex:2;}
+
+/* Drag ghost */
+.drag-ghost{
+  position:fixed;pointer-events:none;z-index:9999;
+  padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+  transform:translate(-50%,-50%) scale(1.2);
+  opacity:0.95;
+}
+.drag-ghost.bracket-ghost{
+  font-size:24px;padding:8px 16px;
+  border:2px solid var(--yellow);color:var(--yellow);
+  background:rgba(255,214,10,0.15);
+  box-shadow:0 0 30px rgba(255,214,10,0.4),0 12px 40px rgba(0,0,0,0.5);
+  animation:ghost-glow 0.8s ease-in-out infinite alternate;
+}
+@keyframes ghost-glow{
+  from{box-shadow:0 0 20px rgba(255,214,10,0.3),0 12px 40px rgba(0,0,0,0.5)}
+  to{box-shadow:0 0 40px rgba(255,214,10,0.6),0 12px 40px rgba(0,0,0,0.5)}
+}
+
+.particle-container{position:fixed;pointer-events:none;z-index:9998;}
+.particle{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:var(--yellow);
+  animation:particle-fly 0.6s ease-out forwards;
+}
+@keyframes particle-fly{
+  0%{opacity:1;transform:translate(0,0) scale(1)}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}
+}
+
+/* Picker */
+.picker-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);}
+.picker-overlay.show{display:flex;align-items:flex-end;justify-content:center;}
+.picker{
+  background:var(--card);border-radius:16px 16px 0 0;
+  width:100%;max-width:500px;
+  padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));
+}
+.picker h3{font-size:15px;font-weight:600;text-align:center;margin-bottom:12px;color:var(--text);}
+.picker-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.picker-tag{
+  padding:8px 16px;border-radius:20px;font-size:14px;font-weight:500;
+  cursor:pointer;border:1.5px solid var(--border);color:var(--text);background:var(--card2);
+  touch-action:manipulation;
+}
+.picker-tag:active{opacity:0.7;}
+.picker-input-row{display:flex;gap:8px;margin-bottom:8px;}
+.picker-input{
+  flex:1;background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;font-size:16px;color:var(--text);outline:none;
+}
+.picker-input:focus{border-color:var(--primary);}
+.picker-ok{
+  background:var(--primary);color:#fff;border:none;border-radius:10px;
+  padding:10px 18px;font-size:15px;font-weight:500;cursor:pointer;touch-action:manipulation;
+}
+.picker-clear{
+  background:none;border:1.5px solid var(--border);color:var(--text2);
+  border-radius:10px;padding:10px 18px;font-size:15px;cursor:pointer;font-weight:500;flex:1;
+  touch-action:manipulation;
+}
+.picker-bottom{display:flex;gap:8px;}
+.picker-empty{text-align:center;color:var(--text3);padding:16px;font-size:13px;}
+
+/* Save modal */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.5);}
+.modal-overlay.show{display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--card);border-radius:16px;width:90%;max-width:400px;padding:20px;}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:16px;text-align:center;}
+.modal-list{max-height:250px;overflow-y:auto;margin-bottom:12px;}
+.modal-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 4px;border-bottom:0.5px solid var(--border);cursor:pointer;
+}
+.modal-item:active{opacity:0.6;}
+.modal-item .mi-name{font-size:15px;font-weight:500;}
+.modal-item .mi-meta{font-size:12px;color:var(--text2);}
+.modal-item .mi-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 8px;}
+.modal-input{
+  width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;font-size:16px;color:var(--text);outline:none;margin-bottom:12px;
+}
+.modal-input:focus{border-color:var(--primary);}
+.modal-btns{display:flex;gap:8px;}
+.modal-btns button{flex:1;border:none;border-radius:10px;padding:12px;font-size:15px;cursor:pointer;font-weight:500;touch-action:manipulation;}
+.mbtn-cancel{background:var(--card2);color:var(--text);}
+.mbtn-ok{background:var(--primary);color:#fff;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <h1>食品成本计算器</h1>
+    <div class="hdr-btns">
+      <button class="hdr-btn" id="btnSave">存档</button>
+      <button class="hdr-btn danger" id="btnClear">清空</button>
+    </div>
+  </div>
+
+  <div class="total-section">
+    <div class="total-left">
+      <div class="total-label">合计金额</div>
+      <div class="total-amount" id="totalAmount">¥0.00</div>
+    </div>
+    <div class="total-right">
+      <div class="total-rows" id="totalRows"></div>
+    </div>
+  </div>
+
+  <div class="labels-tray">
+    <div class="labels-tray-hint">长按拖拽标签到数字上 · 点击标签给选中数字贴</div>
+    <div class="labels-scroll" id="labelsScroll"></div>
+  </div>
+
+  <div class="rows-area" id="rowsArea"></div>
+
+  <div class="numpad" id="numpad">
+    <div class="np-row">
+      <button class="nk fn" data-v="label">标签</button>
+      <button class="nk paren" data-v="(">(</button>
+      <button class="nk paren" data-v=")">)</button>
+      <button class="nk fn" data-v="del">⌫</button>
+    </div>
+    <div class="np-row">
+      <button class="nk" data-v="7">7</button>
+      <button class="nk" data-v="8">8</button>
+      <button class="nk" data-v="9">9</button>
+      <button class="nk op" data-v="×">×</button>
+    </div>
+    <div class="np-row">
+      <button class="nk" data-v="4">4</button>
+      <button class="nk" data-v="5">5</button>
+      <button class="nk" data-v="6">6</button>
+      <button class="nk op" data-v="÷">÷</button>
+    </div>
+    <div class="np-row">
+      <button class="nk" data-v="1">1</button>
+      <button class="nk" data-v="2">2</button>
+      <button class="nk" data-v="3">3</button>
+      <button class="nk op" data-v="+">+</button>
+    </div>
+    <div class="np-row">
+      <button class="nk wide2" data-v="0">0</button>
+      <button class="nk" data-v=".">.</button>
+      <button class="nk fn" data-v="newrow">换行</button>
+      <button class="nk op" data-v="-">-</button>
+    </div>
+  </div>
+</div>
+
+<div class="picker-overlay" id="pickerOverlay">
+  <div class="picker">
+    <h3>给数字贴标签</h3>
+    <div class="picker-tags" id="pickerTags"></div>
+    <div class="picker-input-row">
+      <input class="picker-input" id="pickerInput" placeholder="输入新标签名称">
+      <button class="picker-ok" id="pickerOk">确定</button>
+    </div>
+    <div class="picker-bottom">
+      <button class="picker-clear" id="pickerClear">清除标签</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>存档 / 读档</h3>
+    <div class="modal-list" id="modalList"></div>
+    <input class="modal-input" id="modalInput" placeholder="输入方案名称">
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="modalCancel">取消</button>
+      <button class="mbtn-ok" id="modalSave">保存当前</button>
+    </div>
+  </div>
+</div>
+
+<div class="drag-ghost" id="dragGhost" style="display:none"></div>
+
+<script>
+// ====== Constants & State ======
+const TAG_COLORS=['c0','c1','c2','c3','c4','c5','c6','c7'];
+const DRAG_THRESHOLD=10; // px before drag starts
+
+let labelHistory=load('fc4_label_history',[]); // user's label history, no defaults
+let rows=load('fc4_rows',[]);
+let activeRow=0,activeTokenIdx=-1;
+let pickerTarget=null;
+
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function tagColor(l){const i=labelHistory.indexOf(l);return TAG_COLORS[((i>=0?i:l.length)%TAG_COLORS.length)]}
+function labelHex(l){const m={c0:'#ff6b6b',c1:'#ffa94d',c2:'#ffd43b',c3:'#69db7c',c4:'#74c0fc',c5:'#b197fc',c6:'#e599f7',c7:'#fcc2d7'};return m[tagColor(l)]||'#98989f'}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function makeRow(){return{tokens:[{type:'num',value:'',label:''}]}}
+function persist(){save('fc4_rows',rows)}
+function lastNumIdx(row){for(let i=row.tokens.length-1;i>=0;i--)if(row.tokens[i].type==='num')return i;return 0}
+
+// Add label to history (most recent first, dedup)
+function recordLabel(label){
+  if(!label)return;
+  labelHistory=labelHistory.filter(l=>l!==label);
+  labelHistory.unshift(label);
+  if(labelHistory.length>50)labelHistory=labelHistory.slice(0,50);
+  save('fc4_label_history',labelHistory);
+}
+
+function removeLabel(label){
+  labelHistory=labelHistory.filter(l=>l!==label);
+  save('fc4_label_history',labelHistory);
+  renderLabels();
+}
+
+if(!rows.length) rows.push(makeRow());
+
+// ====== Render labels tray ======
+function renderLabels(){
+  const el=document.getElementById('labelsScroll');
+  el.innerHTML=
+    `<div class="tag bracket" data-bracket="(">(</div>`+
+    `<div class="tag bracket" data-bracket=")">)</div>`+
+    labelHistory.map(l=>`<div class="tag ${tagColor(l)}" data-label="${esc(l)}">${esc(l)}<button class="tag-del" data-del="${esc(l)}">×</button></div>`).join('')+
+    `<div class="tag tag-add" id="tagAdd">+</div>`;
+
+  // Bind drag on label & bracket tags
+  el.querySelectorAll('.tag[data-label],.tag[data-bracket]').forEach(bindDrag);
+
+  // Delete buttons on tags (long press shows, but we use explicit button)
+  el.querySelectorAll('.tag-del').forEach(btn=>{
+    btn.ontouchstart=e=>{e.stopPropagation()};
+    btn.onclick=e=>{e.stopPropagation();removeLabel(btn.dataset.del)};
+  });
+
+  // Add button
+  const addBtn=document.getElementById('tagAdd');
+  if(addBtn){
+    addBtn.ontouchend=e=>{e.preventDefault();promptNewLabel()};
+    addBtn.onclick=promptNewLabel;
+  }
+}
+
+function promptNewLabel(){
+  const n=prompt('输入新标签名称');
+  if(!n||!n.trim())return;
+  recordLabel(n.trim());
+  renderLabels();
+}
+
+// ====== Render rows ======
+function renderRows(){
+  const area=document.getElementById('rowsArea');
+  let totalVal=0,validRows=0;
+
+  area.innerHTML=rows.map((row,ri)=>{
+    let previewHtml='';
+    row.tokens.forEach((tok,ti)=>{
+      if(tok.type==='paren'){
+        previewHtml+=`<div class="token" data-ri="${ri}" data-ti="${ti}"><div class="token-paren" data-ri="${ri}" data-ti="${ti}">${esc(tok.value)}</div><div class="token-paren-hint">拖/点删</div></div>`;
+      }else if(tok.type==='op'){
+        previewHtml+=`<div class="token"><div class="token-op">${esc(tok.value)}</div></div>`;
+      }else{
+        const isActive=(ri===activeRow&&ti===activeTokenIdx);
+        const numCls='token-num'+(isActive?' active-token':'');
+        const display=tok.value||'<span style="color:var(--text3)">_</span>';
+        const lbl=tok.label
+          ?`<div class="token-label" data-ri="${ri}" data-ti="${ti}" style="color:${labelHex(tok.label)}">${esc(tok.label)}</div>`
+          :`<div class="token-label empty" data-ri="${ri}" data-ti="${ti}">标签</div>`;
+        previewHtml+=`<div class="token" data-ri="${ri}" data-ti="${ti}"><div class="${numCls}" data-ri="${ri}" data-ti="${ti}">${display}</div>${lbl}</div>`;
+      }
+    });
+
+    const rawExpr=row.tokens.map(t=>{
+      if(t.type==='paren')return t.value;
+      if(t.type==='op')return' '+t.value+' ';
+      return t.value||'_';
+    }).join('');
+
+    const sub=evalRow(row);
+    const subText=sub!==null?'= ¥'+sub.toFixed(2):'';
+    if(sub!==null){totalVal+=sub;validRows++}
+
+    return`<div class="row${ri===activeRow?' active':''}" data-ri="${ri}">
+      <div class="row-preview">${previewHtml}</div>
+      <div class="row-expr">
+        <span class="row-expr-text">${esc(rawExpr)}</span>
+        <span class="row-subtotal">${subText}</span>
+        <button class="row-del" data-ri="${ri}">×</button>
+      </div>
+    </div>`;
+  }).join('')+`<button class="add-row" id="addRowBtn">+ 添加一行</button>`;
+
+  document.getElementById('totalAmount').textContent='¥'+totalVal.toFixed(2);
+  document.getElementById('totalRows').textContent=validRows+'项有效';
+
+  // Bind paren drag/remove
+  area.querySelectorAll('.token-paren').forEach(el=>{
+    bindParenDrag(el);
+  });
+
+  // Bind touch events (more reliable than click on iOS)
+  area.querySelectorAll('.token-num').forEach(el=>{
+    el.ontouchend=e=>{
+      e.preventDefault();
+      activeRow=+el.dataset.ri;activeTokenIdx=+el.dataset.ti;renderRows();
+    };
+  });
+  area.querySelectorAll('.token-label').forEach(el=>{
+    el.ontouchend=e=>{
+      e.preventDefault();
+      openPicker(+el.dataset.ri,+el.dataset.ti);
+    };
+  });
+  area.querySelectorAll('.row-del').forEach(el=>{
+    el.ontouchend=e=>{
+      e.preventDefault();e.stopPropagation();
+      const ri=+el.dataset.ri;
+      if(rows.length<=1){rows=[makeRow()];activeRow=0;activeTokenIdx=0;}
+      else{rows.splice(ri,1);if(activeRow>=rows.length)activeRow=rows.length-1;activeTokenIdx=lastNumIdx(rows[activeRow]);}
+      persist();renderRows();
+    };
+  });
+  area.querySelectorAll('.row').forEach(el=>{
+    el.ontouchend=e=>{
+      if(e.target.closest('.token-num')||e.target.closest('.token-label')||e.target.closest('.token-paren')||e.target.closest('.row-del'))return;
+      e.preventDefault();
+      const ri=+el.dataset.ri;
+      activeRow=ri;activeTokenIdx=lastNumIdx(rows[ri]);renderRows();
+    };
+  });
+  const addBtn=document.getElementById('addRowBtn');
+  addBtn.ontouchend=e=>{
+    e.preventDefault();
+    rows.push(makeRow());activeRow=rows.length-1;activeTokenIdx=0;
+    persist();renderRows();
+    document.getElementById('rowsArea').scrollTop=99999;
+  };
+}
+
+// ====== Eval ======
+function evalRow(row){
+  let expr='';
+  for(const t of row.tokens){
+    if(t.type==='paren')expr+=t.value;
+    else if(t.type==='op'){
+      if(t.value==='×')expr+='*';else if(t.value==='÷')expr+='/';else expr+=t.value;
+    }else{
+      if(!t.value&&t.value!=='0')return null;
+      expr+=t.value;
+    }
+  }
+  if(!expr.trim())return null;
+  try{const r=Function('"use strict";return('+expr+')')();return typeof r==='number'&&isFinite(r)?r:null}catch{return null}
+}
+
+// ====== Numpad (use touchend for iOS reliability) ======
+document.getElementById('numpad').addEventListener('touchend',e=>{
+  const btn=e.target.closest('.nk');
+  if(!btn)return;
+  e.preventDefault();
+  btn.classList.add('pressed');
+  setTimeout(()=>btn.classList.remove('pressed'),100);
+
+  const v=btn.dataset.v;
+  handleNumpad(v);
+},{passive:false});
+
+// Also support mouse click for desktop
+document.getElementById('numpad').addEventListener('click',e=>{
+  const btn=e.target.closest('.nk');
+  if(!btn)return;
+  e.preventDefault();
+  handleNumpad(btn.dataset.v);
+});
+
+function handleNumpad(v){
+  const row=rows[activeRow];
+  if(!row)return;
+
+  if(v==='newrow'){
+    rows.push(makeRow());activeRow=rows.length-1;activeTokenIdx=0;
+    persist();renderRows();document.getElementById('rowsArea').scrollTop=99999;return;
+  }
+  if(v==='label'){
+    if(activeTokenIdx>=0&&row.tokens[activeTokenIdx]&&row.tokens[activeTokenIdx].type==='num')
+      openPicker(activeRow,activeTokenIdx);
+    return;
+  }
+  if(v==='del'){
+    if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
+    const tok=row.tokens[activeTokenIdx];
+    if(!tok)return;
+    if(tok.type==='num'&&tok.value.length>0){
+      tok.value=tok.value.slice(0,-1);
+    }else if(tok.type==='num'&&activeTokenIdx>0){
+      const prev=row.tokens[activeTokenIdx-1];
+      if(prev&&prev.type==='op'){
+        row.tokens.splice(activeTokenIdx-1,2);
+        activeTokenIdx=Math.max(0,activeTokenIdx-2);
+      }else if(prev&&prev.type==='paren'){
+        row.tokens.splice(activeTokenIdx-1,1);
+        activeTokenIdx=Math.max(0,activeTokenIdx-1);
+      }
+      if(!row.tokens.length)row.tokens.push({type:'num',value:'',label:''});
+      if(activeTokenIdx>=row.tokens.length)activeTokenIdx=lastNumIdx(row);
+    }else if(tok.type==='paren'){
+      row.tokens.splice(activeTokenIdx,1);
+      if(!row.tokens.length)row.tokens.push({type:'num',value:'',label:''});
+      activeTokenIdx=Math.min(activeTokenIdx,row.tokens.length-1);
+      if(row.tokens[activeTokenIdx].type!=='num')activeTokenIdx=lastNumIdx(row);
+    }
+    persist();renderRows();return;
+  }
+
+  if(v==='('||v===')'){
+    insertParen(row,v);persist();renderRows();return;
+  }
+
+  if(['+','-','×','÷'].includes(v)){
+    if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
+    const cur=row.tokens[activeTokenIdx];
+    if(!cur)return;
+    if(cur.type==='num'&&!cur.value)return;
+    const insertAt=activeTokenIdx+1;
+    row.tokens.splice(insertAt,0,{type:'op',value:v},{type:'num',value:'',label:''});
+    activeTokenIdx=insertAt+1;
+    persist();renderRows();return;
+  }
+
+  // Number/dot
+  if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
+  let tok=row.tokens[activeTokenIdx];
+  if(tok&&tok.type==='paren'){
+    const insertAt=activeTokenIdx+1;
+    row.tokens.splice(insertAt,0,{type:'num',value:'',label:''});
+    activeTokenIdx=insertAt;
+    tok=row.tokens[activeTokenIdx];
+  }
+  if(!tok||tok.type!=='num')return;
+  if(v==='.'&&tok.value.includes('.'))return;
+  tok.value+=v;
+  persist();renderRows();
+}
+
+function insertParen(row,p){
+  if(activeTokenIdx<0)activeTokenIdx=lastNumIdx(row);
+  if(p==='('){
+    row.tokens.splice(activeTokenIdx,0,{type:'paren',value:'('});
+    activeTokenIdx++;
+  }else{
+    row.tokens.splice(activeTokenIdx+1,0,{type:'paren',value:')'});
+  }
+}
+
+// ====== Paren drag (reposition) & tap (remove) ======
+let parenDrag=null; // {ri, ti, startX, startY, active, el}
+
+function bindParenDrag(el){
+  el.addEventListener('touchstart',onParenDragStart,{passive:true});
+  el.addEventListener('touchmove',onParenDragMove,{passive:false});
+  el.addEventListener('touchend',onParenDragEnd,{passive:false});
+}
+
+function onParenDragStart(e){
+  const ri=+e.currentTarget.dataset.ri,ti=+e.currentTarget.dataset.ti;
+  if(isNaN(ri)||isNaN(ti))return;
+  const t=e.touches[0];
+  const tok=rows[ri]&&rows[ri].tokens[ti];
+  if(!tok||tok.type!=='paren')return;
+  parenDrag={ri,ti,startX:t.clientX,startY:t.clientY,active:false,el:e.currentTarget,value:tok.value};
+  e.currentTarget.classList.add('paren-active');
+  // Prepare ghost
+  ghost.textContent=tok.value;
+  ghost.className='drag-ghost bracket-ghost';
+}
+
+function onParenDragMove(e){
+  if(!parenDrag)return;
+  const t=e.touches[0];
+  const dx=t.clientX-parenDrag.startX,dy=t.clientY-parenDrag.startY;
+  if(!parenDrag.active){
+    if(Math.abs(dx)<DRAG_THRESHOLD&&Math.abs(dy)<DRAG_THRESHOLD)return;
+    parenDrag.active=true;
+    ghost.style.display='block';
+    if(parenDrag.el)parenDrag.el.style.opacity='0.3';
+  }
+  e.preventDefault();
+  ghost.style.left=t.clientX+'px';
+  ghost.style.top=t.clientY+'px';
+
+  // Highlight num tokens as drop targets
+  document.querySelectorAll('.token-num').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const hit=t.clientX>=r.left-20&&t.clientX<=r.right+20&&t.clientY>=r.top-10&&t.clientY<=r.bottom+10;
+    if(hit)el.classList.add('drop-hover');
+    else el.classList.remove('drop-hover');
+  });
+}
+
+function onParenDragEnd(e){
+  ghost.style.display='none';
+  document.querySelectorAll('.drop-hover').forEach(el=>el.classList.remove('drop-hover'));
+  if(!parenDrag)return;
+
+  const{ri,ti,active,value}=parenDrag;
+  if(parenDrag.el){parenDrag.el.classList.remove('paren-active');parenDrag.el.style.opacity='';}
+
+  if(!active){
+    // TAP → remove this paren
+    e.preventDefault();
+    const row=rows[ri];
+    if(row&&row.tokens[ti]&&row.tokens[ti].type==='paren'){
+      row.tokens.splice(ti,1);
+      if(!row.tokens.length)row.tokens.push({type:'num',value:'',label:''});
+      // Fix activeTokenIdx
+      if(ri===activeRow&&activeTokenIdx>=ti&&activeTokenIdx>0)activeTokenIdx--;
+      if(activeTokenIdx>=row.tokens.length)activeTokenIdx=lastNumIdx(row);
+      persist();renderRows();
+    }
+    parenDrag=null;return;
+  }
+
+  // DRAG → reposition: remove from old pos, insert at nearest num
+  e.preventDefault();
+  const touch=e.changedTouches[0];
+  let best=null,bestDist=Infinity;
+  document.querySelectorAll('.token-num').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const d=Math.hypot(touch.clientX-cx,touch.clientY-cy);
+    if(d<bestDist&&d<120){bestDist=d;best={ri:+el.dataset.ri,ti:+el.dataset.ti}}
+  });
+
+  // Remove old paren first
+  const row=rows[ri];
+  if(row&&row.tokens[ti]&&row.tokens[ti].type==='paren'){
+    row.tokens.splice(ti,1);
+    if(!row.tokens.length)row.tokens.push({type:'num',value:'',label:''});
+    // Adjust activeTokenIdx
+    if(ri===activeRow&&activeTokenIdx>ti)activeTokenIdx--;
+
+    if(best){
+      // Adjust target index if in same row and after removed position
+      let targetRi=best.ri,targetTi=best.ti;
+      if(targetRi===ri&&targetTi>ti)targetTi--;
+
+      const targetRow=rows[targetRi];
+      if(targetRow){
+        if(value==='('){
+          targetRow.tokens.splice(targetTi,0,{type:'paren',value:'('});
+          if(targetRi===activeRow&&activeTokenIdx>=targetTi)activeTokenIdx++;
+        }else{
+          targetRow.tokens.splice(targetTi+1,0,{type:'paren',value:')'});
+          if(targetRi===activeRow&&activeTokenIdx>targetTi)activeTokenIdx++;
+        }
+        spawnParticles(touch.clientX,touch.clientY);
+      }
+    }
+    // If no target found, paren is just removed (dragged to nowhere)
+  }
+
+  persist();renderRows();
+  parenDrag=null;
+}
+
+// ====== Drag & Drop (with threshold to distinguish tap from drag) ======
+let dragData=null,dragActive=false,dragStartX=0,dragStartY=0,dragEl=null;
+const ghost=document.getElementById('dragGhost');
+
+function bindDrag(el){
+  el.addEventListener('touchstart',onDragStart,{passive:true});
+  el.addEventListener('touchmove',onDragMove,{passive:false});
+  el.addEventListener('touchend',onDragEnd,{passive:false});
+}
+
+function onDragStart(e){
+  const label=e.currentTarget.dataset.label;
+  const bracket=e.currentTarget.dataset.bracket;
+  if(label)dragData={type:'label',value:label};
+  else if(bracket)dragData={type:'bracket',value:bracket};
+  else return;
+  dragActive=false;
+  dragEl=e.currentTarget;
+  const t=e.touches[0];
+  dragStartX=t.clientX;
+  dragStartY=t.clientY;
+
+  if(dragData.type==='bracket'){
+    ghost.textContent=dragData.value;
+    ghost.className='drag-ghost bracket-ghost';
+  }else{
+    ghost.textContent=dragData.value;
+    ghost.className='drag-ghost '+tagColor(dragData.value);
+    const cs=getComputedStyle(e.currentTarget);
+    ghost.style.background=cs.background;
+    ghost.style.color=cs.color;
+    ghost.style.border='1.5px solid '+cs.borderColor;
+  }
+}
+
+function onDragMove(e){
+  if(!dragData)return;
+  const t=e.touches[0];
+  const dx=t.clientX-dragStartX,dy=t.clientY-dragStartY;
+
+  // Only start drag after threshold
+  if(!dragActive){
+    if(Math.abs(dx)<DRAG_THRESHOLD&&Math.abs(dy)<DRAG_THRESHOLD)return;
+    dragActive=true;
+    ghost.style.display='block';
+    if(dragEl)dragEl.classList.add('dragging');
+  }
+
+  e.preventDefault(); // only prevent default AFTER drag starts
+  ghost.style.left=t.clientX+'px';
+  ghost.style.top=t.clientY+'px';
+
+  // Highlight targets
+  document.querySelectorAll('.token-num').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const pad=dragData.type==='bracket'?20:0;
+    const hit=t.clientX>=r.left-pad&&t.clientX<=r.right+pad&&t.clientY>=r.top-10&&t.clientY<=r.bottom+10;
+    if(hit)el.classList.add('drop-hover');
+    else el.classList.remove('drop-hover');
+  });
+}
+
+function onDragEnd(e){
+  ghost.style.display='none';
+  if(dragEl)dragEl.classList.remove('dragging');
+  document.querySelectorAll('.drop-hover').forEach(el=>el.classList.remove('drop-hover'));
+
+  if(!dragData){return}
+
+  // TAP (no drag) → apply label to active num, or insert bracket at cursor
+  if(!dragActive){
+    e.preventDefault();
+    if(dragData.type==='label'){
+      // Tap label tag → apply to currently selected num
+      if(activeTokenIdx>=0&&rows[activeRow]&&rows[activeRow].tokens[activeTokenIdx]&&rows[activeRow].tokens[activeTokenIdx].type==='num'){
+        rows[activeRow].tokens[activeTokenIdx].label=dragData.value;
+        recordLabel(dragData.value);
+        persist();renderRows();renderLabels();
+      }
+    }else{
+      // Tap bracket → insert at cursor
+      const row=rows[activeRow];
+      if(row){insertParen(row,dragData.value);persist();renderRows();}
+    }
+    dragData=null;dragEl=null;return;
+  }
+
+  // DRAG completed
+  const touch=e.changedTouches[0];
+  let dropped=false;
+
+  if(dragData.type==='label'){
+    document.querySelectorAll('.token-num').forEach(el=>{
+      const r=el.getBoundingClientRect();
+      if(touch.clientX>=r.left&&touch.clientX<=r.right&&touch.clientY>=r.top&&touch.clientY<=r.bottom){
+        const ri=+el.dataset.ri,ti=+el.dataset.ti;
+        if(rows[ri]&&rows[ri].tokens[ti]&&rows[ri].tokens[ti].type==='num'){
+          rows[ri].tokens[ti].label=dragData.value;
+          recordLabel(dragData.value);
+          dropped=true;
+        }
+      }
+    });
+  }else{
+    let best=null,bestDist=Infinity;
+    document.querySelectorAll('.token-num').forEach(el=>{
+      const r=el.getBoundingClientRect();
+      const cx=r.left+r.width/2,cy=r.top+r.height/2;
+      const d=Math.hypot(touch.clientX-cx,touch.clientY-cy);
+      if(d<bestDist&&d<100){bestDist=d;best={ri:+el.dataset.ri,ti:+el.dataset.ti}}
+    });
+    if(best){
+      const row=rows[best.ri];
+      if(row){
+        const p=dragData.value;
+        if(p==='('){
+          row.tokens.splice(best.ti,0,{type:'paren',value:'('});
+          if(best.ri===activeRow&&activeTokenIdx>=best.ti)activeTokenIdx++;
+        }else{
+          row.tokens.splice(best.ti+1,0,{type:'paren',value:')'});
+        }
+        dropped=true;
+        spawnParticles(touch.clientX,touch.clientY);
+      }
+    }
+  }
+
+  if(dropped){persist();renderRows();renderLabels();}
+  dragData=null;dragActive=false;dragEl=null;
+}
+
+// ====== Particles ======
+function spawnParticles(x,y){
+  const c=document.createElement('div');
+  c.className='particle-container';c.style.left=x+'px';c.style.top=y+'px';
+  document.body.appendChild(c);
+  const colors=['#ffd60a','#ffed4a','#fff3bf','#ffa94d','#ff9f0a'];
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');p.className='particle';
+    const a=Math.random()*Math.PI*2,dist=40+Math.random()*60;
+    p.style.setProperty('--dx',Math.cos(a)*dist+'px');
+    p.style.setProperty('--dy',Math.sin(a)*dist+'px');
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    const sz=(4+Math.random()*4)+'px';p.style.width=sz;p.style.height=sz;
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.remove(),700);
+}
+
+// ====== Label Picker ======
+function openPicker(ri,ti){
+  pickerTarget={row:ri,tokenIdx:ti};
+  const tagsEl=document.getElementById('pickerTags');
+  if(labelHistory.length===0){
+    tagsEl.innerHTML='<div class="picker-empty">还没有标签，在下方输入创建</div>';
+  }else{
+    tagsEl.innerHTML=labelHistory.map(l=>
+      `<div class="picker-tag" data-label="${esc(l)}" style="border-color:${labelHex(l)};color:${labelHex(l)};background:rgba(255,255,255,0.05)">${esc(l)}</div>`
+    ).join('');
+    tagsEl.querySelectorAll('.picker-tag').forEach(el=>{
+      el.ontouchend=e=>{e.preventDefault();applyLabel(el.dataset.label)};
+      el.onclick=()=>applyLabel(el.dataset.label);
+    });
+  }
+  document.getElementById('pickerInput').value='';
+  document.getElementById('pickerOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('pickerInput').focus(),200);
+}
+
+function applyLabel(label){
+  if(!pickerTarget)return;
+  const{row,tokenIdx}=pickerTarget;
+  if(rows[row]&&rows[row].tokens[tokenIdx]){
+    rows[row].tokens[tokenIdx].label=label;
+    recordLabel(label);
+    persist();renderRows();renderLabels();
+  }
+  document.getElementById('pickerOverlay').classList.remove('show');
+  pickerTarget=null;
+}
+
+document.getElementById('pickerOk').ontouchend=e=>{e.preventDefault();doPickerOk()};
+document.getElementById('pickerOk').onclick=doPickerOk;
+function doPickerOk(){const v=document.getElementById('pickerInput').value.trim();if(v)applyLabel(v)}
+
+document.getElementById('pickerClear').ontouchend=e=>{e.preventDefault();doPickerClear()};
+document.getElementById('pickerClear').onclick=doPickerClear;
+function doPickerClear(){
+  if(!pickerTarget)return;
+  const{row,tokenIdx}=pickerTarget;
+  if(rows[row]&&rows[row].tokens[tokenIdx]){rows[row].tokens[tokenIdx].label='';persist();renderRows();}
+  document.getElementById('pickerOverlay').classList.remove('show');pickerTarget=null;
+}
+
+document.getElementById('pickerOverlay').ontouchend=e=>{
+  if(e.target===e.currentTarget){e.preventDefault();document.getElementById('pickerOverlay').classList.remove('show');pickerTarget=null}
+};
+
+// ====== Save/Load ======
+document.getElementById('btnSave').ontouchend=e=>{e.preventDefault();openSaveModal()};
+document.getElementById('btnSave').onclick=openSaveModal;
+function openSaveModal(){renderSaveList();document.getElementById('modalOverlay').classList.add('show')}
+
+document.getElementById('modalCancel').ontouchend=e=>{e.preventDefault();closeSaveModal()};
+document.getElementById('modalCancel').onclick=closeSaveModal;
+function closeSaveModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+document.getElementById('modalOverlay').ontouchend=e=>{
+  if(e.target===e.currentTarget){e.preventDefault();closeSaveModal()}
+};
+
+document.getElementById('modalSave').ontouchend=e=>{e.preventDefault();doSave()};
+document.getElementById('modalSave').onclick=doSave;
+function doSave(){
+  const name=document.getElementById('modalInput').value.trim();
+  if(!name){document.getElementById('modalInput').focus();return}
+  const schemes=load('fc4_schemes',[]);
+  const now=new Date();
+  const date=`${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  schemes.unshift({name,rows:JSON.parse(JSON.stringify(rows)),date});
+  save('fc4_schemes',schemes);document.getElementById('modalInput').value='';renderSaveList();
+}
+
+function renderSaveList(){
+  const schemes=load('fc4_schemes',[]);
+  const el=document.getElementById('modalList');
+  if(!schemes.length){el.innerHTML='<div style="text-align:center;color:var(--text3);padding:20px;font-size:14px">暂无存档</div>';return}
+  el.innerHTML=schemes.map((s,i)=>{
+    let t=0;s.rows.forEach(r=>{const v=evalRow(r);if(v!==null)t+=v});
+    return`<div class="modal-item" data-idx="${i}"><div><div class="mi-name">${esc(s.name)}</div><div class="mi-meta">${s.rows.length}行 · ¥${t.toFixed(2)} · ${esc(s.date)}</div></div><button class="mi-del" data-idx="${i}">×</button></div>`;
+  }).join('');
+  el.querySelectorAll('.modal-item').forEach(item=>{
+    const handler=e=>{
+      if(e.target.classList.contains('mi-del'))return;
+      e.preventDefault();
+      const idx=+item.dataset.idx;const schemes=load('fc4_schemes',[]);
+      if(schemes[idx]){rows=JSON.parse(JSON.stringify(schemes[idx].rows));activeRow=0;activeTokenIdx=lastNumIdx(rows[0]);persist();renderRows()}
+      closeSaveModal();
+    };
+    item.ontouchend=handler;item.onclick=handler;
+  });
+  el.querySelectorAll('.mi-del').forEach(btn=>{
+    const handler=e=>{
+      e.stopPropagation();e.preventDefault();
+      const idx=+btn.dataset.idx;const schemes=load('fc4_schemes',[]);
+      schemes.splice(idx,1);save('fc4_schemes',schemes);renderSaveList();
+    };
+    btn.ontouchend=handler;btn.onclick=handler;
+  });
+}
+
+document.getElementById('btnClear').ontouchend=e=>{e.preventDefault();doClear()};
+document.getElementById('btnClear').onclick=doClear;
+function doClear(){
+  if(confirm('确定清空？')){rows=[makeRow()];activeRow=0;activeTokenIdx=0;persist();renderRows()}
+}
+
+// ====== Init ======
+activeTokenIdx=lastNumIdx(rows[activeRow]);
+renderLabels();
+renderRows();
+</script>
+</body>
+</html>
