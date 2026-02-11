@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>民俗祈福</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 页面1: 选择庙宇主题 -->
+    <div id="page-temple" class="page active">
+        <div class="page-inner">
+            <h1 class="main-title">民俗祈福</h1>
+            <p class="subtitle">选择您所在地区的庙宇</p>
+            <div id="temple-list" class="temple-list">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 页面2: 输入祈愿 -->
+    <div id="page-pray" class="page">
+        <div class="page-inner">
+            <div class="temple-header">
+                <img id="deity-img" class="deity-img" src="" alt="神像">
+                <h2 id="temple-name" class="temple-name"></h2>
+            </div>
+            <div class="pray-section">
+                <label class="pray-label" for="pray-input">请输入您的祈愿</label>
+                <textarea id="pray-input" class="pray-input" rows="4" placeholder="例如：求家人身体健康、出入平安..."></textarea>
+            </div>
+            <button id="btn-divine" class="btn-primary">开始掷杯</button>
+            <button id="btn-back-temple" class="btn-secondary">返回选择</button>
+        </div>
+    </div>
+
+    <!-- 页面3: 掷杯动画 -->
+    <div id="page-divination" class="page">
+        <div class="page-inner">
+            <h2 class="section-title">掷杯问卦</h2>
+            <p class="hint-text" id="shake-hint">点击下方杯筊开始掷杯</p>
+            <div id="blocks-area" class="blocks-area">
+                <div class="block block-left" id="block-left">
+                    <div class="block-inner">
+                        <div class="block-flat">平</div>
+                        <div class="block-round">凸</div>
+                    </div>
+                </div>
+                <div class="block block-right" id="block-right">
+                    <div class="block-inner">
+                        <div class="block-flat">平</div>
+                        <div class="block-round">凸</div>
+                    </div>
+                </div>
+            </div>
+            <div id="block-result" class="block-result" style="display:none;">
+                <span id="block-result-text"></span>
+            </div>
+            <button id="btn-throw" class="btn-primary btn-throw">掷杯</button>
+            <button id="btn-get-fortune" class="btn-primary" style="display:none;">求签</button>
+            <button id="btn-back-pray" class="btn-secondary">重新祈愿</button>
+        </div>
+    </div>
+
+    <!-- 页面4: 签文结果 -->
+    <div id="page-result" class="page">
+        <div class="page-inner">
+            <div class="result-card">
+                <div class="result-rank" id="result-rank"></div>
+                <h2 class="result-title" id="result-title"></h2>
+                <div class="result-poem" id="result-poem"></div>
+                <div class="result-explain" id="result-explain"></div>
+            </div>
+            <button id="btn-read" class="btn-primary">语音播报</button>
+            <button id="btn-again" class="btn-secondary">再求一签</button>
+            <button id="btn-home" class="btn-secondary">返回首页</button>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
